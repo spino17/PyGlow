@@ -2,13 +2,13 @@ from torch import nn
 from utils import activations as A
 
 
-class Linear(nn.Module):
+class Dense(nn.Module):
     """
     class for dense layer
 
     """
     def __init__(self, output_dim, activation):
-        super(linear, self).__init__()
+        super(Dense, self).__init__()
         self.output_dim = output_dim
         self.activation = activation
 
