@@ -4,9 +4,11 @@ from glow.utils import Activations as A
 
 class Dense(nn.Module):
     """
-    class for dense layer
+
+    class for full connected dense layer
 
     """
+
     def __init__(self, output_dim, activation):
         super(Dense, self).__init__()
         self.output_dim = output_dim

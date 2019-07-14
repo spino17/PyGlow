@@ -6,7 +6,8 @@ from glow.utils import Optimizers as O
 
 class Network(nn.Module):
     """
-    Keras Sequential type implementation for
+
+    Sequential models implementation on
     PyTorch
 
     """
@@ -17,6 +18,8 @@ class Network(nn.Module):
         self.num_layers = 0  # number of layers in the architecture
         if(torch.cuda.is_available()):
             print("running on cuda enabled GPU")
+        else:
+            print("running on CPU environment")
 
     def add(self, layer_obj):
         if(self.num_layers == 0):
@@ -61,25 +64,7 @@ class Network(nn.Module):
                     print('[%d, %5d] loss: %.3f' %
                           (epoch + 1, index + 1, running_loss / 2000))
                     running_loss = 0.0
-
-        print("^^^^^^^^^^^^^^^^^")
         print("Training finished !")
-
-    def fit_generator(self, trainloader, batch_size=64, num_epochs=5, num_classes=10):
-        for e in range(num_epochs):
-            running_loss = 0
-            for images, labels in trainloader:
-                # Flatten MNIST images into a 784 long vector
-                images = images.view(images.shape[0], -1)
-                # TODO: Training pass
-                self.optimizer.zero_grad()
-                output = self.forward(images)
-                loss = self.criterion(output, labels)
-                loss.backward()
-                self.optimizer.step()
-                running_loss += loss.item()
-            else:
-                print(f"Training loss: {running_loss/len(trainloader)}")
 
     def predict(self, x):
         return self.forward(x)
