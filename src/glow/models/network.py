@@ -2,6 +2,7 @@ from torch import nn
 import torch
 from glow.utils import Losses as L
 from glow.utils import Optimizers as O
+from glow.tensor_numpy_adapter import TensorNumpyAdapter
 
 
 class Network(nn.Module):
@@ -16,6 +17,7 @@ class Network(nn.Module):
         self.input_dim = input_dim  # input dimensions
         self.layer_list = nn.ModuleList([])  # list of module type layers
         self.num_layers = 0  # number of layers in the architecture
+        self.adapter_obj = TensorNumpyAdapter()
         if(torch.cuda.is_available()):
             print("running on cuda enabled GPU")
         else:
@@ -52,8 +54,21 @@ class Network(nn.Module):
         print("starting training process")
         for epoch in range(num_epochs):
             running_loss = 0.0
+            """
+            for batch in DataGenerator(x_train, y_train, batch_size):
+                self.optimizer.zero_grad()
+                loss = 0
+                for target, x in enumerate(batch):
+                    output = self.forward(x)
+                    loss += self.criterion(output, target)
+                loss = loss * 1.0 / batch_size
+                loss.backward()
+                self.optimizer.step()
+            """
+
             for index, x in enumerate(x_train):
-                target = y_train[index]
+                x = self.adapter_obj.to_tensor(x)
+                target = self.adapter_obj.to_tensor(y_train[index])
                 self.optimizer.zero_grad()
                 output = self.forward(x)
                 loss = self.criterion(output, target)
@@ -67,6 +82,8 @@ class Network(nn.Module):
         print("Training finished !")
 
     def predict(self, x):
-        return self.forward(x)
+        x = self.adapter_obj.to_tensor(x)
+        return self.adapter_obj.to_numpy(self.forward(x))
+
 
 
