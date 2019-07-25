@@ -50,7 +50,7 @@ class Network(nn.Module):
         self.criterion = L.loss_function(loss)
         self.optimizer = O.optimizer(self.parameters(), learning_rate, momentum, optimizer_name)
 
-    def fit(self, x_train, y_train, batch_size=1, num_epochs=50, num_classes=10):
+    def fit(self, x_train, y_train, batch_size=1, num_epochs, num_classes):
         print("starting training process")
         for epoch in range(num_epochs):
             running_loss = 0.0
@@ -79,6 +79,8 @@ class Network(nn.Module):
                     print('[%d, %5d] loss: %.3f' %
                           (epoch + 1, index + 1, running_loss / 2000))
                     running_loss = 0.0
+            else:
+                # validation loop
         print("Training finished !")
 
     def predict(self, x):
