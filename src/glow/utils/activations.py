@@ -3,15 +3,15 @@ import torch.nn.functional as F
 
 class Activations:
     def activation_function(x, name):
-        if(name == 'relu'):
+        if name == "relu":
             return F.relu(x)
-        elif(name == 'sigmoid'):
+        elif name == "sigmoid":
             return F.sigmoid(x)
-        elif(name == 'tanh'):
+        elif name == "tanh":
             return F.tanh(x)
-        elif(name == 'softmax'):
+        elif name == "softmax":
             return F.softmax(x, dim=1)
-        elif(name == 'none'):
+        elif name == "none":
             return x
-        elif(name == 'log_softmax'):
+        elif name == "log_softmax":
             return F.log_softmax(x, dim=1)
