@@ -4,7 +4,6 @@ from glow.utils import Activations as A
 
 class Dense(nn.Module):
     """
-
     class for full connected dense layer
 
     """
