@@ -43,6 +43,7 @@ class Network(nn.Module):
         layers = self.layer_list
         h = x
         iter_num = 0
+        # iterate over the layers in the NN
         for layer in layers:
             h = layer(h)
             iter_num += 1
