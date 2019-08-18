@@ -3,7 +3,9 @@ import torch.nn.functional as F
 
 class Activations:
     def activation_function(x, name):
-        if name == "relu":
+        if name is None:
+            return x
+        elif name == "relu":
             return F.relu(x)
         elif name == "sigmoid":
             return F.sigmoid(x)

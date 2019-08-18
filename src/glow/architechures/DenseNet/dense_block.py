@@ -26,7 +26,7 @@ class DenseBlock(nn.Module):
         self.conv5 = nn.Conv2d(
             in_channels=128, out_channels=32, kernel_size=3, stride=1, padding=1
         )
-        self.output_dim = # TODO
+        self.output_dim = 160  # conv1 + conv2 + conv3 + conv4 + conv5
 
     def forward(self, x):
         bn = self.bn(x)

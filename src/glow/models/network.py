@@ -14,9 +14,9 @@ class Network(nn.Module):
 
     """
 
-    def __init__(self, input_dim):
+    def __init__(self, input_shape):
         super().__init__()
-        self.input_dim = input_dim  # input dimensions
+        self.input_shape = input_shape  # input dimensions
         self.layer_list = nn.ModuleList([])  # list of module type layers
         self.num_layers = 0  # number of layers in the architecture
         self.adapter_obj = TensorNumpyAdapter()
@@ -27,10 +27,10 @@ class Network(nn.Module):
 
     def add(self, layer_obj):
         if self.num_layers == 0:
-            prev_input_dim = self.input_dim
+            prev_input_shape = self.input_shape
         else:
-            prev_input_dim = self.layer_list[self.num_layers - 1][-1].output_dim
-        layer_obj.set_input(prev_input_dim)
+            prev_input_shape = self.layer_list[self.num_layers - 1][-1].output_shape
+        layer_obj.set_input(prev_input_shape)
         self.layer_list.append(self._make_layer_unit(layer_obj))
         self.num_layers = self.num_layers + 1
 
