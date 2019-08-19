@@ -4,6 +4,8 @@ from .convolutional import Conv3d
 from .core import Dense
 from .core import Dropout
 from .core import Flatten
+from .pooling import MaxPool1d
+from .pooling import AvgPool1d
 
 # from .normalization import BatchNorm1d
 # from .normalization import BatchNorm2d
