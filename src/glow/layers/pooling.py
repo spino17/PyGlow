@@ -66,6 +66,7 @@ class AvgPool1d(_Pooling1d):
 
 class _Pooling2d(nn.Module):
     def __init__(self, pooling_type, kernel_size, stride, padding, dilation):
+        super().__init__()
         self.pooling_type = pooling_type
         self.kernel_size = kernel_size
         self.stride = stride
@@ -137,6 +138,7 @@ class AvgPool2d(_Pooling2d):
 
 class _Pooling3d(nn.Module):
     def __init__(self, pooling_type, kernel_size, stride, padding, dilation):
+        super().__init__()
         self.pooling_type = pooling_type
         self.kernel_size = kernel_size
         self.stride = stride
