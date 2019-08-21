@@ -17,8 +17,6 @@ class Dense(nn.Module):
     def set_input(self, input_shape):
         self.input_shape = input_shape
         # components of the NN are defined here
-        print(self.input_shape)
-        print(self.output_shape)
         self.weights = nn.Linear(self.input_shape[0], self.output_shape[0])
 
     def forward(self, x):

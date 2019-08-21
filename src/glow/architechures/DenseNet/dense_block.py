@@ -7,12 +7,16 @@ class DenseBlock(nn.Module):
     def __init__(self):
         super(DenseBlock, self).__init__()
 
-    def set_input(self, input_dim):
-        self.input_dim = input_dim
+    def set_input(self, input_shape):
+        self.input_shape = input_shape
         self.relu = nn.ReLU(inplace=True)
-        self.bn = nn.BatchNorm2d(num_features=input_dim)
+        self.bn = nn.BatchNorm2d(num_features=input_shape[0])
         self.conv1 = nn.Conv2d(
-            in_channels=input_dim, out_channels=32, kernel_size=3, stride=1, padding=1
+            in_channels=input_shape[0],
+            out_channels=32,
+            kernel_size=3,
+            stride=1,
+            padding=1,
         )
         self.conv2 = nn.Conv2d(
             in_channels=32, out_channels=32, kernel_size=3, stride=1, padding=1
@@ -26,7 +30,11 @@ class DenseBlock(nn.Module):
         self.conv5 = nn.Conv2d(
             in_channels=128, out_channels=32, kernel_size=3, stride=1, padding=1
         )
-        self.output_dim = 160  # conv1 + conv2 + conv3 + conv4 + conv5
+        self.output_shape = (
+            160,
+            self.input_shape[1],
+            self.input_shape[2],
+        )  # conv1 + conv2 + conv3 + conv4 + conv5
 
     def forward(self, x):
         bn = self.bn(x)

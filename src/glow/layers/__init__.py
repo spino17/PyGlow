@@ -10,7 +10,6 @@ from .pooling import MaxPool2d
 from .pooling import AvgPool2d
 from .pooling import MaxPool3d
 from .pooling import AvgPool3d
-
-# from .normalization import BatchNorm1d
-# from .normalization import BatchNorm2d
-# from .normalization import BatchNorm3d
+from .normalization import BatchNorm1d
+from .normalization import BatchNorm2d
+from .normalization import BatchNorm3d

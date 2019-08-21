@@ -36,12 +36,6 @@ class _Conv(nn.Module):
         self.activation = activation
 
     def set_input(self, input_shape):
-        """
-        if len(self.input_shape_tuple) == 0:
-            self.input_shape = input_shape
-        else:
-            self.input_shape = self.input_shape_tuple
-        """
         self.input_shape = input_shape
         self.in_channels = self.input_shape[0]  # according to PyTorch convention
 
