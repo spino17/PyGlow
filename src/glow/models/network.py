@@ -116,6 +116,11 @@ class Network(nn.Module):
             plt.plot(epochs, val_losses, color="blue")
             plt.show()
 
+    """
+    def fit_generator(self, x_train, y_train, batch_size, num_epochs, validation_split=0.2, show_plot=True, data_generator):
+        # TODO
+    """
+
     def predict(self, x):
         with torch.no_grad():
             self.eval()
