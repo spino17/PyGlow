@@ -18,7 +18,11 @@ class TransitionLayer(nn.Module):
             bias=False,
         )
         self.avg_pool = nn.AvgPool2d(kernel_size=2, stride=2, padding=0)
-        self.output_shape = (self.output_dim,)
+        self.output_shape = (
+            self.output_dim,
+            int(self.input_shape[1] / 2),
+            int(self.input_shape[2] / 2),
+        )
 
     def forward(self, x):
         bn = self.bn(self.relu(self.conv(x)))

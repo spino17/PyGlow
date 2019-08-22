@@ -3,39 +3,19 @@ import random
 from glow.utils import Hash as H
 
 
-class _Estimators(Network):
+class _Estimators:
     """
     Class for implementing functionalities to estimate distributions P(X, Y),
     P(T|X), P(Y|T) and correspondingly Information plane coordinate (I(X;T), I(T;Y))
     of all the layers at all the epochs
 
     """
-    def __init__(self, model):
-        super().__init__(model.input_shape)  # initialize a Network object
-        self.layer_list = model.layer_list
-        self.num_layers = model.num_layers
-        self.adapter_obj = TensorNumpyAdapter()
-        self.criterion = model.criterion
-        self.optimizer = model.optimizer
+    def __init__(self):
+        # TODO
 
     # returns mutual information between x and y random variable
     def mutual_information(self, x, y):
         pass
-
-    # forward pass with appropiate estimation model
-    def forward(self, x):
-        layers = self.layer_list
-        I_XT = []
-        I_YT = []
-        t = x
-        iter_num = 0
-        for layer in layers:
-            t = layer(t)
-            with torch.no_grad():
-                I_XT.append(mutual_information(x, t))
-                I_YT.append()
-            iter_num += 1
-        return t
 
 """
 class KDE(_Estimators):
