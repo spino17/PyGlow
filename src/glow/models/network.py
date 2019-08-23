@@ -5,12 +5,13 @@ from glow.utils import Optimizers as O
 from glow.tensor_numpy_adapter import TensorNumpyAdapter
 from glow.preprocessing import DataGenerator
 import matplotlib.pyplot as plt
+from glow.coordinates import IP_Coordinates
 
 
-class Network(nn.Module):
+class _Network(nn.Module):
     """
-    Sequential models implementation on
-    PyTorch
+    Base class for Sequential models implementation on
+    PyTorch.
 
     """
 
@@ -116,13 +117,158 @@ class Network(nn.Module):
             plt.plot(epochs, val_losses, color="blue")
             plt.show()
 
-    """
-    def fit_generator(self, x_train, y_train, batch_size, num_epochs, validation_split=0.2, show_plot=True, data_generator):
-        # TODO
-    """
 
+"""
+    def fit_generator(self, generator, num_epochs, validation_split=0.2, show_plot=True):
+        train_losses, val_losses, epochs = [], [], []
+        # TrainLoader = data_processor.get_trainloader()
+        # ValLoader = data_processor.get_validationloader()
+        for epoch in range(num_epochs):
+            print("epoch no. ", epoch + 1)
+            # training loop
+            train_loss = 0
+            self.model.train()
+            for batch_ndx, sample in enumerate(generator):
+                self.optimizer.zero_grad()
+                x = sample[0]
+                y = sample[1]
+                y_pred = self.model(x)
+                loss = self.criterion(y_pred, y)
+                loss.backward()
+                self.optimizer.step()
+                train_loss += loss.item()
+            else:
+                # validation loop
+                self.model.eval()
+                val_loss = 0
+                with torch.no_grad():
+                    # scope of no gradient calculations
+                    for batch_ndx, sample in enumerate(ValLoader):
+                        x = sample[0]
+                        y = sample[1]
+                        y_pred = self.model(x)
+                        val_loss += self.criterion(y_pred, y).item()
+                train_losses.append(train_loss / len(TrainLoader))
+                val_losses.append(val_loss / len(ValLoader))
+                epochs.append(epoch + 1)
+
+        # plot the loss vs epoch graphs
+        if show_plot:
+            plt.plot(epochs, train_losses, color="red")
+            plt.plot(epochs, val_losses, color="blue")
+            plt.show()
+"""
     def predict(self, x):
         with torch.no_grad():
             self.eval()
             x = self.adapter_obj.to_tensor(x)
             return self.adapter_obj.to_numpy(self.forward(x))
+
+
+class Sequential(_Network):
+    """
+    Keras like Sequential model.
+
+    """
+
+    def __init__(self, input_shape):
+        super().__init__(input_shape)
+
+
+class SequentialIB(_Network):
+    """
+    Class that attaches Information Bottleneck functionalities
+    with the model to analyses the dynamics of training.
+
+    """
+
+    def __init__(self, input_shape, estimator="EDGE", params=None):
+        super().__init__(input_shape)
+        self.estimator = estimator
+        self.params = params
+
+    def forward(self, x):
+        layers = self.layer_list
+        layer_output = [x]
+        h = x
+        iter_num = 0
+        # iterate over the layers in the NN
+        for layer in layers:
+            h = layer(h)
+            with torch.no_grad():
+                t = h
+                layer_output.append(t)
+
+            iter_num += 1
+        return h, layer_output
+
+    def fit(
+        self,
+        x_train,
+        y_train,
+        batch_size,
+        num_epochs,
+        validation_split=0.2,
+        show_plot=True,
+    ):
+        train_losses, val_losses, epochs = [], [], []
+        x_train, y_train = (
+            self.adapter_obj.to_tensor(x_train),
+            self.adapter_obj.to_tensor(y_train),
+        )
+        data_processor = DataGenerator()
+        data_processor.set_dataset(
+            x_train, y_train, batch_size, validation_split
+        )  # tensorise the dataset elements for further processing in pytorch nn module
+        TrainLoader = data_processor.get_trainloader()
+        ValLoader = data_processor.get_validationloader()
+        epoch_output = []
+        for epoch in range(num_epochs):
+            print("epoch no. ", epoch + 1)
+            # training loop
+            train_loss = 0
+            self.model.train()
+            batch_output = []
+            for batch_ndx, sample in enumerate(TrainLoader):
+                self.optimizer.zero_grad()
+                x = sample[0]
+                y = sample[1]
+                y_pred, layer_output = self.model(x)
+                batch_output.append(layer_output)
+                loss = self.criterion(y_pred, y)
+                loss.backward()
+                self.optimizer.step()
+                train_loss += loss.item()
+            else:
+                # validation loop
+                self.model.eval()
+                val_loss = 0
+                with torch.no_grad():
+                    # scope of no gradient calculations
+                    for batch_ndx, sample in enumerate(ValLoader):
+                        x = sample[0]
+                        y = sample[1]
+                        y_pred = self.model(x)
+                        val_loss += self.criterion(y_pred, y).item()
+                train_losses.append(train_loss / len(TrainLoader))
+                val_losses.append(val_loss / len(ValLoader))
+                epochs.append(epoch + 1)
+                epoch_output.append(batch_output)
+
+        print("Training finished")
+        print("Information plane calculations started")
+        self.ipc = IP_Coordinates(
+            epoch_output, self.estimator, self.params, self.num_layers
+        )
+        print("finished")
+
+        # plot the loss vs epoch graphs
+        if show_plot:
+            plt.plot(epochs, train_losses, color="red")
+            plt.plot(epochs, val_losses, color="blue")
+            plt.show()
+
+    def IP_plot(self):
+        x_axis, y_axis = self.ipc.unpack()
+        plt.scatter(x_axis, y_axis)
+        plt.show()

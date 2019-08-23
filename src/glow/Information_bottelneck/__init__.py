@@ -1,1 +1,1 @@
-from .estimators import EDGE
+from .estimator import EDGE

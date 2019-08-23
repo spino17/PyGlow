@@ -1,4 +1,4 @@
-import math
+import torch
 
 
 class Hash:
@@ -6,6 +6,6 @@ class Hash:
         if name == "floor_hash":
             # floor hash function
             def floor_hash(x):
-                return math.floor((x + b) / epsilon)
+                return torch.floor((x + b) / epsilon)
 
             return floor_hash
