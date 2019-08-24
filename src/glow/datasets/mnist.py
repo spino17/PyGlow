@@ -6,16 +6,16 @@ import numpy as np
 
 
 def load_data(batch_size, num_workers, validation_split):
-    # convert data to a normalized torch.FloatTensor
+    # Define a transform to normalize the data
     transform = transforms.Compose(
-        [transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
+        [transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))]
     )
-    # choose the training and test datasets
-    train_data = datasets.CIFAR10(
-        "data", train=True, download=True, transform=transform
+    # Download and load the training data
+    train_data = datasets.MNIST(
+        "~/.pytorch/MNIST_data/", download=True, train=True, transform=transform
     )
-    test_data = datasets.CIFAR10(
-        "data", train=False, download=True, transform=transform
+    test_data = datasets.MNIST(
+        "~/.pytorch/MNIST_data/", download=True, train=False, transform=transform
     )
 
     num_train = len(train_data)

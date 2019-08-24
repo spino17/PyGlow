@@ -28,3 +28,12 @@ class DataGenerator(Dataset):
 
     def get_validationloader(self):
         return DataLoader(self.validation_dataset, self.batch_size)
+
+
+"""
+    def make_trainloader(self, data_path):
+        # TODO
+
+    def make_validationloader(self, data_path):
+        # TODO
+"""

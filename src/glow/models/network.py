@@ -82,29 +82,27 @@ class _Network(nn.Module):
         )  # tensorise the dataset elements for further processing in pytorch nn module
         TrainLoader = data_processor.get_trainloader()
         ValLoader = data_processor.get_validationloader()
+        num_batches = len(TrainLoader)
         for epoch in range(num_epochs):
             print("epoch no. ", epoch + 1)
             # training loop
             train_loss = 0
             self.train()
-            for batch_ndx, sample in enumerate(TrainLoader):
+            for x, y in TrainLoader:
                 self.optimizer.zero_grad()
-                x = sample[0]
-                y = sample[1]
                 y_pred = self.forward(x)
                 loss = self.criterion(y_pred, y)
                 loss.backward()
                 self.optimizer.step()
                 train_loss += loss.item()
+                print("=", end="")
             else:
                 # validation loop
                 self.eval()
                 val_loss = 0
                 with torch.no_grad():
                     # scope of no gradient calculations
-                    for batch_ndx, sample in enumerate(ValLoader):
-                        x = sample[0]
-                        y = sample[1]
+                    for x, y in ValLoader:
                         y_pred = self.forward(x)
                         val_loss += self.criterion(y_pred, y).item()
                 train_losses.append(train_loss / len(TrainLoader))
@@ -123,42 +121,37 @@ class _Network(nn.Module):
             x = self.adapter_obj.to_tensor(x)
             return self.adapter_obj.to_numpy(self.forward(x))
 
-    def fit_generator(
-        self,
-        train_generator,
-        test_generator,
-        num_epochs,
-        validation_split=0.2,
-        show_plot=True,
-    ):
+    def fit_generator(self, train_loader, val_loader, num_epochs, show_plot=True):
+        data_obj = DataGenerator()
+        if train_generator is None:
+            train_generator = obj.make_trainloader(data_path)
+        if val_generator is None:
+            val_generator = obj.make_validationloader(data_path)
         train_losses, val_losses, epochs = [], [], []
         for epoch in range(num_epochs):
             print("epoch no. ", epoch + 1)
             # training loop
             train_loss = 0
             self.train()
-            for batch_ndx, sample in enumerate(train_generator):
+            for x, y in train_generator:
                 self.optimizer.zero_grad()
-                x = sample[0]
-                y = sample[1]
                 y_pred = self.forward(x)
                 loss = self.criterion(y_pred, y)
                 loss.backward()
                 self.optimizer.step()
                 train_loss += loss.item()
+                print("=", end="")
             else:
                 # validation loop
                 self.eval()
                 val_loss = 0
                 with torch.no_grad():
                     # scope of no gradient calculations
-                    for batch_ndx, sample in enumerate(test_generator):
-                        x = sample[0]
-                        y = sample[1]
+                    for x, y in val_generator:
                         y_pred = self.forward(x)
                         val_loss += self.criterion(y_pred, y).item()
                 train_losses.append(train_loss / len(train_generator))
-                val_losses.append(val_loss / len(test_generator))
+                val_losses.append(val_loss / len(val_generator))
                 epochs.append(epoch + 1)
 
         # plot the loss vs epoch graphs
@@ -242,6 +235,7 @@ class SequentialIB(_Network):
                 loss.backward()
                 self.optimizer.step()
                 train_loss += loss.item()
+                print("=", end="")
             else:
                 # validation loop
                 self.eval()
@@ -258,8 +252,7 @@ class SequentialIB(_Network):
                 epochs.append(epoch + 1)
                 epoch_output.append(batch_output)
 
-        print("Training finished")
-        print("Information plane calculations started")
+        print("Information plane calculations starting...")
         self.ipc = IP_Coordinates(
             epoch_output, self.estimator, self.params, self.num_layers
         )
