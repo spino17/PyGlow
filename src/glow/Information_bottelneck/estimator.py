@@ -1,6 +1,6 @@
-import dit
 import random
 from glow.utils import Hash as H
+import math
 
 
 class _Estimator:
@@ -29,7 +29,7 @@ class Binned(_Estimator):
         super().__init__([num_bins])
 
     def mutual_information(self, x, y):
-        # TODO
+        return 0
 
 """
 class KDE(_Estimator):
@@ -56,12 +56,18 @@ class EDGE(_Estimator):
     'SCALABLE MUTUAL INFORMATION ESTIMATION USING DEPENDENCE GRAPHS'
 
     """
+
     def __init__(self, hash_function='floor_hash', epsilon, alpha=1):
         b = random.uniform(0, epsilon)
         super().__init__([hash_function, epsilon, b, alpha])
 
+    def g(self, x):
+        return x * torch.log(x) * (1 / math.log(10))
+
     def mutual_information(self, x, y):
         h = H.hash_function(self.params[0], self.params[1], self.parmas[2]) # hash function
+        num_sample = x.shape[0]
+        F = self.params[3] * num_sample
         N = torch.zeros(F, 1)
         M = torch.zeros(F, 1)
         L = torch.zeros(F, F)
@@ -73,9 +79,16 @@ class EDGE(_Estimator):
             M[j] = M[j] + 1
             L[i][j] = L[i][j] + 1
 
-        n = (1 / k) * N
-        m = (1 / k) * M
-        l = # TODO
+        n = (1 / num_sample) * N
+        m = (1 / num_sample) * M
+        temp_matrix = torch.mm(N, torch.transpose(M, 0, 1))
+        zero_matrix = torch.zeros(F, F)
+        w = torch.addcdiv(zero_matrix, N, L, temp_matrix)
+        temp_matrix = torch.mm(n, torch.transpose(m, 0, 1))
+        mut_info = torch.sum(temp_matrix * g(w))
+
+        return mut_info
+
 
 
 class HSIC(_Estimator):

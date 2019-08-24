@@ -117,6 +117,12 @@ class _Network(nn.Module):
             plt.plot(epochs, val_losses, color="blue")
             plt.show()
 
+    def predict(self, x):
+        with torch.no_grad():
+            self.eval()
+            x = self.adapter_obj.to_tensor(x)
+            return self.adapter_obj.to_numpy(self.forward(x))
+
 
 """
     def fit_generator(self, generator, num_epochs, validation_split=0.2, show_plot=True):
@@ -158,11 +164,6 @@ class _Network(nn.Module):
             plt.plot(epochs, val_losses, color="blue")
             plt.show()
 """
-    def predict(self, x):
-        with torch.no_grad():
-            self.eval()
-            x = self.adapter_obj.to_tensor(x)
-            return self.adapter_obj.to_numpy(self.forward(x))
 
 
 class Sequential(_Network):
