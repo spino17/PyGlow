@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 from torch import nn
+
 # from glow.utils import estimators as E
 
 
@@ -31,7 +32,6 @@ class IP_Coordinates:
                 batch_coord.append(layer_coord)
         epoch_coord.append(batch_coord)
         self.coordinates = epoch_coord
-
 
     def unpack(self):
         I_x = []

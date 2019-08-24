@@ -86,26 +86,26 @@ class _Network(nn.Module):
             print("epoch no. ", epoch + 1)
             # training loop
             train_loss = 0
-            self.model.train()
+            self.train()
             for batch_ndx, sample in enumerate(TrainLoader):
                 self.optimizer.zero_grad()
                 x = sample[0]
                 y = sample[1]
-                y_pred = self.model(x)
+                y_pred = self.forward(x)
                 loss = self.criterion(y_pred, y)
                 loss.backward()
                 self.optimizer.step()
                 train_loss += loss.item()
             else:
                 # validation loop
-                self.model.eval()
+                self.eval()
                 val_loss = 0
                 with torch.no_grad():
                     # scope of no gradient calculations
                     for batch_ndx, sample in enumerate(ValLoader):
                         x = sample[0]
                         y = sample[1]
-                        y_pred = self.model(x)
+                        y_pred = self.forward(x)
                         val_loss += self.criterion(y_pred, y).item()
                 train_losses.append(train_loss / len(TrainLoader))
                 val_losses.append(val_loss / len(ValLoader))
@@ -118,44 +118,47 @@ class _Network(nn.Module):
             plt.show()
 
     def predict(self, x):
+        self.eval()
         with torch.no_grad():
-            self.eval()
             x = self.adapter_obj.to_tensor(x)
             return self.adapter_obj.to_numpy(self.forward(x))
 
-
-"""
-    def fit_generator(self, generator, num_epochs, validation_split=0.2, show_plot=True):
+    def fit_generator(
+        self,
+        train_generator,
+        test_generator,
+        num_epochs,
+        validation_split=0.2,
+        show_plot=True,
+    ):
         train_losses, val_losses, epochs = [], [], []
-        # TrainLoader = data_processor.get_trainloader()
-        # ValLoader = data_processor.get_validationloader()
         for epoch in range(num_epochs):
             print("epoch no. ", epoch + 1)
             # training loop
             train_loss = 0
-            self.model.train()
-            for batch_ndx, sample in enumerate(generator):
+            self.train()
+            for batch_ndx, sample in enumerate(train_generator):
                 self.optimizer.zero_grad()
                 x = sample[0]
                 y = sample[1]
-                y_pred = self.model(x)
+                y_pred = self.forward(x)
                 loss = self.criterion(y_pred, y)
                 loss.backward()
                 self.optimizer.step()
                 train_loss += loss.item()
             else:
                 # validation loop
-                self.model.eval()
+                self.eval()
                 val_loss = 0
                 with torch.no_grad():
                     # scope of no gradient calculations
-                    for batch_ndx, sample in enumerate(ValLoader):
+                    for batch_ndx, sample in enumerate(test_generator):
                         x = sample[0]
                         y = sample[1]
-                        y_pred = self.model(x)
+                        y_pred = self.forward(x)
                         val_loss += self.criterion(y_pred, y).item()
-                train_losses.append(train_loss / len(TrainLoader))
-                val_losses.append(val_loss / len(ValLoader))
+                train_losses.append(train_loss / len(train_generator))
+                val_losses.append(val_loss / len(test_generator))
                 epochs.append(epoch + 1)
 
         # plot the loss vs epoch graphs
@@ -163,7 +166,6 @@ class _Network(nn.Module):
             plt.plot(epochs, train_losses, color="red")
             plt.plot(epochs, val_losses, color="blue")
             plt.show()
-"""
 
 
 class Sequential(_Network):
@@ -190,14 +192,14 @@ class SequentialIB(_Network):
 
     def forward(self, x):
         layers = self.layer_list
-        layer_output = [x]
+        layer_output = [x.detach()]
         h = x
         iter_num = 0
         # iterate over the layers in the NN
         for layer in layers:
             h = layer(h)
             with torch.no_grad():
-                t = h
+                t = h.detach()
                 layer_output.append(t)
 
             iter_num += 1
@@ -228,13 +230,13 @@ class SequentialIB(_Network):
             print("epoch no. ", epoch + 1)
             # training loop
             train_loss = 0
-            self.model.train()
+            self.train()
             batch_output = []
             for batch_ndx, sample in enumerate(TrainLoader):
                 self.optimizer.zero_grad()
                 x = sample[0]
                 y = sample[1]
-                y_pred, layer_output = self.model(x)
+                y_pred, layer_output = self.forward(x)
                 batch_output.append(layer_output)
                 loss = self.criterion(y_pred, y)
                 loss.backward()
@@ -242,14 +244,14 @@ class SequentialIB(_Network):
                 train_loss += loss.item()
             else:
                 # validation loop
-                self.model.eval()
+                self.eval()
                 val_loss = 0
                 with torch.no_grad():
                     # scope of no gradient calculations
                     for batch_ndx, sample in enumerate(ValLoader):
                         x = sample[0]
                         y = sample[1]
-                        y_pred = self.model(x)
+                        y_pred, layer_output = self.forward(x)
                         val_loss += self.criterion(y_pred, y).item()
                 train_losses.append(train_loss / len(TrainLoader))
                 val_losses.append(val_loss / len(ValLoader))

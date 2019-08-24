@@ -14,6 +14,7 @@ class DataGenerator(Dataset):
         super().__init__()
 
     def set_dataset(self, X, y, batch_size, validation_split=0.2):
+        y = y.long().view(-1)
         self.dataset = TensorDataset(X, y)
         self.batch_size = batch_size
         training_length = int(len(self.dataset) * (1 - validation_split))

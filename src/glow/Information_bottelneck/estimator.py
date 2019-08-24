@@ -1,6 +1,7 @@
 import random
 from glow.utils import Hash as H
 import math
+import torch
 
 
 class _Estimator:
@@ -31,6 +32,7 @@ class Binned(_Estimator):
     def mutual_information(self, x, y):
         return 0
 
+
 """
 class KDE(_Estimator):
     # TODO
@@ -57,7 +59,7 @@ class EDGE(_Estimator):
 
     """
 
-    def __init__(self, hash_function='floor_hash', epsilon, alpha=1):
+    def __init__(self, hash_function, epsilon, alpha=1):
         b = random.uniform(0, epsilon)
         super().__init__([hash_function, epsilon, b, alpha])
 
@@ -65,7 +67,9 @@ class EDGE(_Estimator):
         return x * torch.log(x) * (1 / math.log(10))
 
     def mutual_information(self, x, y):
-        h = H.hash_function(self.params[0], self.params[1], self.parmas[2]) # hash function
+        h = H.hash_function(
+            self.params[0], self.params[1], self.parmas[2]
+        )  # hash function
         num_sample = x.shape[0]
         F = self.params[3] * num_sample
         N = torch.zeros(F, 1)
@@ -90,7 +94,6 @@ class EDGE(_Estimator):
         return mut_info
 
 
-
 class HSIC(_Estimator):
     """
     Class for estimating Hilbert-Schmidt Independence Criterion as done in
@@ -98,17 +101,17 @@ class HSIC(_Estimator):
 
     """
 
-    def __init__(self, ):
-        super().__init__([])
+    def __init__(self, sigma):
+        super().__init__([sigma])
 
     def HS_Criterion(self, x, y):
+        sigma = self.params[0]
         m = x.shape[0]
         d_x = x.shape[1]
         d_y = y.shape[1]
-        K_x =
-        K_y =
+        K_x = torch.ones(m, m)
+        K_y = torch.ones(m, m)
         H = torch.eye(m, m) - (1 / m) * torch.ones(m, m)
         matrix_x = torch.mm(K_x, H)
         matrix_y = torch.mm(K_y, H)
         return (1 / (m - 1)) * torch.trace(torch.mm(matrix_x, matrix_y))
-
