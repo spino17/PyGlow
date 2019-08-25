@@ -6,6 +6,8 @@ from glow.tensor_numpy_adapter import TensorNumpyAdapter
 from glow.preprocessing import DataGenerator
 import matplotlib.pyplot as plt
 from glow.coordinates import IP_Coordinates
+from glow.utils import metrics
+from .. import
 
 
 class _Network(nn.Module):
@@ -52,14 +54,15 @@ class _Network(nn.Module):
 
     def compile(
         self,
-        optimizer_name="SGD",
+        optimizer="SGD",
         loss="cross_entropy",
+        metrics=[],
         learning_rate=0.001,
         momentum=0.95,
     ):
         self.criterion = L.loss_function(loss)
         self.optimizer = O.optimizer(
-            self.parameters(), learning_rate, momentum, optimizer_name
+            self.parameters(), learning_rate, momentum, optimizer
         )
 
     def prepare_numpy_data(self, x_train, y_train, batch_size, validation_split):
@@ -75,17 +78,21 @@ class _Network(nn.Module):
         val_loader = data_processor.get_validationloader()
         return train_loader, val_loader
 
+    # def handle_metrics(self, y_pred, y_true, metrics):
+        # TODO
+
     def training_loop(self, num_epochs, train_loader, val_loader, show_plot=True):
         train_losses, val_losses, epochs = [], [], []
         for epoch in range(num_epochs):
             # training loop
-            print("epoch no. ", epoch + 1)
+            print("Epoch " + str(epoch) + "/" + str(num_epochs))
             train_loss = 0
             self.train()
             for x, y in train_loader:
                 self.optimizer.zero_grad()
                 y_pred = self.forward(x)
                 loss = self.criterion(y_pred, y)
+                #metric_values = self.handle_metrics(metrics)
                 loss.backward()
                 self.optimizer.step()
                 train_loss += loss.item()
@@ -117,113 +124,19 @@ class _Network(nn.Module):
         validation_split=0.2,
         show_plot=True,
     ):
-        """
-        x_train, y_train = (
-            self.adapter_obj.to_tensor(x_train),
-            self.adapter_obj.to_tensor(y_train),
-        )
-        data_processor = DataGenerator()
-        data_processor.set_dataset(
-            x_train, y_train, batch_size, validation_split
-        )  # tensorise the dataset elements for further processing in pytorch nn module
-        TrainLoader = data_processor.get_trainloader()
-        ValLoader = data_processor.get_validationloader()
-        """
         train_loader, val_loader = self.prepare_numpy_data(
             x_train, y_train, batch_size, validation_split
         )
-        # num_batches = len(train_loader)
         self.training_loop(num_epochs, train_loader, val_loader, show_plot=show_plot)
-        """
-        for epoch in range(num_epochs):
-            print("epoch no. ", epoch + 1)
-            # training loop
-            train_loss = 0
-            self.train()
-            for x, y in train_loader:
-                self.optimizer.zero_grad()
-                y_pred = self.forward(x)
-                loss = self.criterion(y_pred, y)
-                loss.backward()
-                self.optimizer.step()
-                train_loss += loss.item()
-                print("=", end="")
-            else:
-                # validation loop
-                self.eval()
-                val_loss = 0
-                with torch.no_grad():
-                    # scope of no gradient calculations
-                    for x, y in val_loader:
-                        y_pred = self.forward(x)
-                        val_loss += self.criterion(y_pred, y).item()
-                train_losses.append(train_loss / len(train_loader))
-                val_losses.append(val_loss / len(val_loader))
-                epochs.append(epoch + 1)
 
-        # plot the loss vs epoch graphs
-        if show_plot:
-            plt.plot(epochs, train_losses, color="red")
-            plt.plot(epochs, val_losses, color="blue")
-            plt.show()
-        """
+    def fit_generator(self, train_loader, val_loader, num_epochs, show_plot=True):
+        self.training_loop(num_epochs, train_loader, val_loader, show_plot)
 
     def predict(self, x):
         self.eval()
         with torch.no_grad():
             x = self.adapter_obj.to_tensor(x)
             return self.adapter_obj.to_numpy(self.forward(x))
-
-    def fit_generator(self, train_loader, val_loader, num_epochs, show_plot=True):
-        """
-        data_obj = DataGenerator()
-        if train_generator is None:
-            train_generator = obj.make_trainloader(data_path)
-        if val_generator is None:
-            val_generator = obj.make_validationloader(data_path)
-        """
-        self.training_loop(num_epochs, train_loader, val_loader, show_plot)
-        """
-        train_losses, val_losses, epochs = [], [], []
-        for epoch in range(num_epochs):
-            print("epoch no. ", epoch + 1)
-            # training loop
-            train_loss = 0
-            self.train()
-            load_index = int(len(train_loader) / 40)
-            index = 0
-            for x, y in train_loader:
-                self.optimizer.zero_grad()
-                y_pred = self.forward(x)
-                loss = self.criterion(y_pred, y)
-                loss.backward()
-                self.optimizer.step()
-                train_loss += loss.item()
-                index += 1
-                if index % load_index == 0:
-                    print("=", end="")
-            else:
-                # validation loop
-                self.eval()
-                val_loss = 0
-                with torch.no_grad():
-                    # scope of no gradient calculations
-                    for x, y in val_loader:
-                        y_pred = self.forward(x)
-                        val_loss += self.criterion(y_pred, y).item()
-                train_losses.append(train_loss / len(train_loader))
-                val_losses.append(val_loss / len(val_loader))
-                epochs.append(epoch + 1)
-                print("\n")
-                print("train_loss: ", train_loss / len(train_loader))
-                print("val_loss: ", val_loss / len(val_loader))
-
-        # plot the loss vs epoch graphs
-        if show_plot:
-            plt.plot(epochs, train_losses, color="red")
-            plt.plot(epochs, val_losses, color="blue")
-            plt.show()
-        """
 
 
 class Sequential(_Network):
@@ -272,17 +185,10 @@ class SequentialIB(_Network):
         validation_split=0.2,
         show_plot=True,
     ):
-        train_losses, val_losses, epochs = [], [], []
-        x_train, y_train = (
-            self.adapter_obj.to_tensor(x_train),
-            self.adapter_obj.to_tensor(y_train),
-        )
-        data_processor = DataGenerator()
-        data_processor.set_dataset(
+        train_loader, val_loader = self.prepare_numpy_data(
             x_train, y_train, batch_size, validation_split
-        )  # tensorise the dataset elements for further processing in pytorch nn module
-        TrainLoader = data_processor.get_trainloader()
-        ValLoader = data_processor.get_validationloader()
+        )
+        train_losses, val_losses, epochs = [], [], []
         epoch_output = []
         for epoch in range(num_epochs):
             print("epoch no. ", epoch + 1)
@@ -290,30 +196,25 @@ class SequentialIB(_Network):
             train_loss = 0
             self.train()
             batch_output = []
-            for batch_ndx, sample in enumerate(TrainLoader):
+            for x, y in train_loader:
                 self.optimizer.zero_grad()
-                x = sample[0]
-                y = sample[1]
                 y_pred, layer_output = self.forward(x)
                 batch_output.append(layer_output)
                 loss = self.criterion(y_pred, y)
                 loss.backward()
                 self.optimizer.step()
                 train_loss += loss.item()
-                print("=", end="")
             else:
                 # validation loop
                 self.eval()
                 val_loss = 0
                 with torch.no_grad():
                     # scope of no gradient calculations
-                    for batch_ndx, sample in enumerate(ValLoader):
-                        x = sample[0]
-                        y = sample[1]
+                    for x, y in enumerate(val_loader):
                         y_pred, layer_output = self.forward(x)
                         val_loss += self.criterion(y_pred, y).item()
-                train_losses.append(train_loss / len(TrainLoader))
-                val_losses.append(val_loss / len(ValLoader))
+                train_losses.append(train_loss / len(train_loader))
+                val_losses.append(val_loss / len(val_loader))
                 epochs.append(epoch + 1)
                 epoch_output.append(batch_output)
 
@@ -333,3 +234,13 @@ class SequentialIB(_Network):
         x_axis, y_axis = self.ipc.unpack()
         plt.scatter(x_axis, y_axis)
         plt.show()
+
+
+"""
+class HSIC(_Network):
+    def __init__(self, input_shape):
+        super().__init__()
+
+    def training_loop(self, num_epochs, train_loader, val_loader, show_plot=True):
+        # TODO
+"""

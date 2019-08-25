@@ -17,7 +17,6 @@ class _Conv(nn.Module):
         stride,
         padding,
         dilation,
-        data_format,
         activation,
         **kwargs
     ):
@@ -28,11 +27,6 @@ class _Conv(nn.Module):
         self.stride = stride
         self.padding = padding
         self.dilation = dilation
-        self.data_format = data_format
-        if len(kwargs) <= 1:
-            self.input_shape_tuple = kwargs
-        else:
-            print("'input_shape' argument got more values than expected")
         self.activation = activation
 
     def set_input(self, input_shape):
@@ -46,6 +40,7 @@ class _Conv(nn.Module):
                 out_channels=self.filters,
                 kernel_size=self.kernel_size,
                 padding=self.padding,
+                dilation=self.dilation,
             )
             L_in = self.input_shape[1]
             C_out = self.filters
@@ -61,6 +56,7 @@ class _Conv(nn.Module):
                 out_channels=self.filters,
                 kernel_size=self.kernel_size,
                 padding=self.padding,
+                dilation=self.dilation,
             )
             H_in = self.input_shape[1]
             W_in = self.input_shape[2]
@@ -92,6 +88,7 @@ class _Conv(nn.Module):
                 out_channels=self.filters,
                 kernel_size=self.kernel_size,
                 padding=self.padding,
+                dilation=self.dilation,
             )
             D_in = self.input_shape[1]
             H_in = self.input_shape[2]
@@ -139,10 +136,9 @@ class Conv1d(_Conv):
         filters,
         kernel_size,
         stride,
-        padding,
-        dilation,
-        data_format,
-        activation,
+        padding=0,
+        dilation=1,
+        activation="relu",
         **kwargs
     ):
         super().__init__(
@@ -152,7 +148,6 @@ class Conv1d(_Conv):
             stride=stride,
             padding=padding,
             dilation=dilation,
-            data_format=data_format,
             activation=activation,
             **kwargs
         )
@@ -170,12 +165,19 @@ class Conv2d(_Conv):
         filters,
         kernel_size,
         stride,
-        padding,
-        dilation,
-        data_format,
-        activation,
+        padding=0,
+        dilation=1,
+        activation="relu",
         **kwargs
     ):
+        if isinstance(kernel_size, int):
+            kernel_size = (kernel_size, kernel_size)
+        if isinstance(stride, int):
+            stride = (stride, stride)
+        if isinstance(padding, int):
+            padding = (padding, padding)
+        if isinstance(dilation, int):
+            dilation = (dilation, dilation)
         super().__init__(
             rank=2,
             filters=filters,
@@ -183,7 +185,6 @@ class Conv2d(_Conv):
             stride=stride,
             padding=padding,
             dilation=dilation,
-            data_format=data_format,
             activation=activation,
             **kwargs
         )
@@ -197,16 +198,16 @@ class Conv2d(_Conv):
 
 class Conv3d(_Conv):
     def __init__(
-        self,
-        filters,
-        kernel_size,
-        stride,
-        padding,
-        dilation,
-        data_format,
-        activation,
-        **kwargs
+        self, filters, kernel_size, stride, padding, dilation, activation, **kwargs
     ):
+        if isinstance(kernel_size, int):
+            kernel_size = (kernel_size, kernel_size, kernel_size)
+        if isinstance(stride, int):
+            stride = (stride, stride, stride)
+        if isinstance(padding, int):
+            padding = (padding, padding, padding)
+        if isinstance(dilation, int):
+            dilation = (dilation, dilation, dilation)
         super().__init__(
             rank=3,
             filters=filters,
@@ -214,7 +215,6 @@ class Conv3d(_Conv):
             stride=stride,
             padding=padding,
             dilation=dilation,
-            data_format=data_format,
             activation=activation,
             **kwargs
         )

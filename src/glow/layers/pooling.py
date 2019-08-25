@@ -67,6 +67,14 @@ class AvgPool1d(_Pooling1d):
 class _Pooling2d(nn.Module):
     def __init__(self, pooling_type, kernel_size, stride, padding, dilation):
         super().__init__()
+        if isinstance(kernel_size, int):
+            kernel_size = (kernel_size, kernel_size)
+        if isinstance(stride, int):
+            stride = (stride, stride)
+        if isinstance(padding, int):
+            padding = (padding, padding)
+        if isinstance(dilation, int):
+            dilation = (dilation, dilation)
         self.pooling_type = pooling_type
         self.kernel_size = kernel_size
         self.stride = stride
@@ -139,6 +147,14 @@ class AvgPool2d(_Pooling2d):
 class _Pooling3d(nn.Module):
     def __init__(self, pooling_type, kernel_size, stride, padding, dilation):
         super().__init__()
+        if isinstance(kernel_size, int):
+            kernel_size = (kernel_size, kernel_size, kernel_size)
+        if isinstance(stride, int):
+            stride = (stride, stride, stride)
+        if isinstance(padding, int):
+            padding = (padding, padding, padding)
+        if isinstance(dilation, int):
+            dilation = (dilation, dilation, dilation)
         self.pooling_type = pooling_type
         self.kernel_size = kernel_size
         self.stride = stride
@@ -152,7 +168,7 @@ class _Pooling3d(nn.Module):
         W_in = self.input_shape[3]
         D_out = math.floor(
             (
-                H_in
+                D_in
                 + 2 * self.padding[0]
                 - self.dilation[0] * (self.kernel_size[0] - 1)
                 - 1
