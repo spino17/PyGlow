@@ -6,8 +6,8 @@ from glow.tensor_numpy_adapter import TensorNumpyAdapter
 from glow.preprocessing import DataGenerator
 import matplotlib.pyplot as plt
 from glow.coordinates import IP_Coordinates
-from glow.utils import metrics
-from .. import
+from .. import metrics as metric_module
+from tqdm import tqdm
 
 
 class _Network(nn.Module):
@@ -64,6 +64,7 @@ class _Network(nn.Module):
         self.optimizer = O.optimizer(
             self.parameters(), learning_rate, momentum, optimizer
         )
+        self.metrics = metrics
 
     def prepare_numpy_data(self, x_train, y_train, batch_size, validation_split):
         x_train, y_train = (
@@ -78,35 +79,61 @@ class _Network(nn.Module):
         val_loader = data_processor.get_validationloader()
         return train_loader, val_loader
 
-    # def handle_metrics(self, y_pred, y_true, metrics):
-        # TODO
+    def handle_metrics(self, metrics):
+        metric_dict = {}
+        for metric in metrics:
+            if metric == "accuracy":
+                metric_fn = metric_module.categorical_accuracy  # returns the function
+
+            metric_dict[metric] = metric_fn
+
+        return metric_dict
 
     def training_loop(self, num_epochs, train_loader, val_loader, show_plot=True):
         train_losses, val_losses, epochs = [], [], []
+        train_len = len(train_loader)
+        val_len = len(val_loader)
         for epoch in range(num_epochs):
             # training loop
-            print("Epoch " + str(epoch) + "/" + str(num_epochs))
+            print("Epoch " + str(epoch + 1) + "/" + str(num_epochs))
             train_loss = 0
             self.train()
+            print("Training loop: ")
+            # pbar = tqdm(total=train_loader_len)
             for x, y in train_loader:
                 self.optimizer.zero_grad()
                 y_pred = self.forward(x)
                 loss = self.criterion(y_pred, y)
-                #metric_values = self.handle_metrics(metrics)
                 loss.backward()
                 self.optimizer.step()
                 train_loss += loss.item()
+                # pbar.update(1)
             else:
                 # validation loop
+                metric_values = []
+                metric_dict = self.handle_metrics(self.metrics)
+                for key in metric_dict:
+                    metric_values.append(metric_dict[key](y, y_pred))
+                print("\n")
+                print(
+                    "Training loss: " + str(train_loss / train_len) + "acc: ",
+                    metric_values[0],
+                )
                 self.eval()
                 val_loss = 0
                 with torch.no_grad():
                     # scope of no gradient calculations
+                    print("Validation loop: ")
+                    # pbar = tqdm(total=val_loader_len)
                     for x, y in val_loader:
                         y_pred = self.forward(x)
                         val_loss += self.criterion(y_pred, y).item()
-                train_losses.append(train_loss / len(train_loader))
-                val_losses.append(val_loss / len(val_loader))
+                        # pbar.update(1)
+                    # pbar.close()
+
+                    print("\n")
+                train_losses.append(train_loss / train_len)
+                val_losses.append(val_loss / val_len)
                 epochs.append(epoch + 1)
 
         # plot the loss vs epoch graphs
