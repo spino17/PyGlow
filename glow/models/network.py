@@ -93,13 +93,13 @@ class _Network(nn.Module):
         train_losses, val_losses, epochs = [], [], []
         train_len = len(train_loader)
         val_len = len(val_loader)
+        metric_dict = self.handle_metrics(self.metrics)
         for epoch in range(num_epochs):
             # training loop
             print("Epoch " + str(epoch + 1) + "/" + str(num_epochs))
             train_loss = 0
             self.train()
             print("Training loop: ")
-            # pbar = tqdm(total=train_loader_len)
             for x, y in train_loader:
                 self.optimizer.zero_grad()
                 y_pred = self.forward(x)
@@ -107,31 +107,32 @@ class _Network(nn.Module):
                 loss.backward()
                 self.optimizer.step()
                 train_loss += loss.item()
-                # pbar.update(1)
             else:
                 # validation loop
                 metric_values = []
-                metric_dict = self.handle_metrics(self.metrics)
                 for key in metric_dict:
                     metric_values.append(metric_dict[key](y, y_pred))
                 print("\n")
                 print(
-                    "Training loss: " + str(train_loss / train_len) + "acc: ",
-                    metric_values[0],
+                    "loss: %.2f - acc: %.2f"
+                    % (train_loss / train_len, metric_values[0])
                 )
                 self.eval()
                 val_loss = 0
                 with torch.no_grad():
                     # scope of no gradient calculations
                     print("Validation loop: ")
-                    # pbar = tqdm(total=val_loader_len)
                     for x, y in val_loader:
                         y_pred = self.forward(x)
                         val_loss += self.criterion(y_pred, y).item()
-                        # pbar.update(1)
-                    # pbar.close()
-
+                    metric_values = []
+                    for key in metric_dict:
+                        metric_values.append(metric_dict[key](y, y_pred))
                     print("\n")
+                    print(
+                        "loss: %.2f - acc: %.2f"
+                        % (val_loss / val_len, metric_values[0])
+                    )
                 train_losses.append(train_loss / train_len)
                 val_losses.append(val_loss / val_len)
                 epochs.append(epoch + 1)
