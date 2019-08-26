@@ -13,3 +13,7 @@ class TensorNumpyAdapter:
 
     def to_numpy(self, x):
         return x.numpy()
+
+
+def get():
+    return TensorNumpyAdapter()

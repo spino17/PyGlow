@@ -2,10 +2,10 @@ from torch import nn
 import torch
 from glow.utils import Losses as L
 from glow.utils import Optimizers as O
-from glow.tensor_numpy_adapter import TensorNumpyAdapter
+from .. import tensor_numpy_adapter
 from glow.preprocessing import DataGenerator
 import matplotlib.pyplot as plt
-from glow.coordinates import IP_Coordinates
+from .. import coordinates
 from .. import metrics as metric_module
 from tqdm import tqdm
 
@@ -22,7 +22,7 @@ class _Network(nn.Module):
         self.input_shape = input_shape  # input dimensions
         self.layer_list = nn.ModuleList([])  # list of module type layers
         self.num_layers = 0  # number of layers in the architecture
-        self.adapter_obj = TensorNumpyAdapter()
+        self.adapter_obj = tensor_numpy_adapter.get()
         if torch.cuda.is_available():
             print("running on cuda enabled GPU")
         else:
@@ -247,7 +247,7 @@ class SequentialIB(_Network):
                 epoch_output.append(batch_output)
 
         print("Information plane calculations starting...")
-        self.ipc = IP_Coordinates(
+        self.ipc = coordinates.get(
             epoch_output, self.estimator, self.params, self.num_layers
         )
         print("finished")

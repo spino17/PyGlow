@@ -42,3 +42,7 @@ class IP_Coordinates:
                     I_x.append(layer[0])
                     I_y.append(layer[1])
         return I_x, I_y
+
+
+def get(data_values, estimator, params, num_layers):
+    return IP_Coordinates(data_values, estimator, params, num_layers)

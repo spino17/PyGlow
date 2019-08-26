@@ -1,5 +1,5 @@
 import numpy as np
-from glow.tensor_numpy_adapter import TensorNumpyAdapter
+from .. import tensor_numpy_adapter
 from torch.utils.data import Dataset, DataLoader, TensorDataset, random_split
 from torch.nn.functional import one_hot
 
