@@ -1,12 +1,12 @@
 from torch import nn
 import torch
-from glow.utils import Losses as L
+import glow.losses as losses_module
 from glow.utils import Optimizers as O
-from .. import tensor_numpy_adapter
+import glow.tensor_numpy_adapter as tensor_numpy_adapter
 from glow.preprocessing import DataGenerator
 import matplotlib.pyplot as plt
-from .. import coordinates
-from .. import metrics as metric_module
+import glow.coordinates as coordinates
+import glow.metrics as metric_module
 from tqdm import tqdm
 
 
@@ -60,7 +60,7 @@ class _Network(nn.Module):
         learning_rate=0.001,
         momentum=0.95,
     ):
-        self.criterion = L.loss_function(loss)
+        self.criterion = losses_module.get(loss)
         self.optimizer = O.optimizer(
             self.parameters(), learning_rate, momentum, optimizer
         )
@@ -100,6 +100,7 @@ class _Network(nn.Module):
             train_loss = 0
             self.train()
             print("Training loop: ")
+            pbar = tqdm(total=train_len)
             for x, y in train_loader:
                 self.optimizer.zero_grad()
                 y_pred = self.forward(x)
@@ -107,8 +108,10 @@ class _Network(nn.Module):
                 loss.backward()
                 self.optimizer.step()
                 train_loss += loss.item()
+                pbar.update(1)
             else:
                 # validation loop
+                pbar.close()
                 metric_values = []
                 for key in metric_dict:
                     metric_values.append(metric_dict[key](y, y_pred))
@@ -122,9 +125,12 @@ class _Network(nn.Module):
                 with torch.no_grad():
                     # scope of no gradient calculations
                     print("Validation loop: ")
+                    pbar = tqdm(total=val_len)
                     for x, y in val_loader:
                         y_pred = self.forward(x)
                         val_loss += self.criterion(y_pred, y).item()
+                        pbar.update(1)
+                    pbar.close()
                     metric_values = []
                     for key in metric_dict:
                         metric_values.append(metric_dict[key](y, y_pred))
@@ -139,8 +145,12 @@ class _Network(nn.Module):
 
         # plot the loss vs epoch graphs
         if show_plot:
-            plt.plot(epochs, train_losses, color="red")
-            plt.plot(epochs, val_losses, color="blue")
+            plt.title("Epoch vs Loss")
+            plt.xlabel('epochs')
+            plt.ylabel('loss')
+            plt.grid(True)
+            plt.plot(epochs, train_losses, color="red", label='training loss')
+            plt.plot(epochs, val_losses, color="blue", label='validation loss')
             plt.show()
 
     def fit(
@@ -254,21 +264,15 @@ class SequentialIB(_Network):
 
         # plot the loss vs epoch graphs
         if show_plot:
-            plt.plot(epochs, train_losses, color="red")
-            plt.plot(epochs, val_losses, color="blue")
+            plt.title("Epoch vs Loss")
+            plt.xlabel('epochs')
+            plt.ylabel('loss')
+            plt.grid(True)
+            plt.plot(epochs, train_losses, color="red", label='training loss')
+            plt.plot(epochs, val_losses, color="blue", label='validation loss')
             plt.show()
 
     def IP_plot(self):
         x_axis, y_axis = self.ipc.unpack()
         plt.scatter(x_axis, y_axis)
         plt.show()
-
-
-"""
-class HSIC(_Network):
-    def __init__(self, input_shape):
-        super().__init__()
-
-    def training_loop(self, num_epochs, train_loader, val_loader, show_plot=True):
-        # TODO
-"""

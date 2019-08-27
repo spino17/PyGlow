@@ -36,7 +36,7 @@ class Dropout(nn.Module):
 
     def set_input(self, input_shape):
         self.input_shape = input_shape
-        self.output_shape = (input_shape[0], 1)
+        self.output_shape = input_shape
         self.dropout_layer = nn.Dropout(self.prob)
 
     def forward(self, x):
