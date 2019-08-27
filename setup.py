@@ -25,6 +25,6 @@ setup(
     ],
     packages=find_packages(),
     include_package_data=True,
-    install_requires=["torch>=1.1.0", "numpy>=1.15.0", "torchvision"],
+    install_requires=["torch>=1.1.0", "numpy>=1.15.0", "torchvision", "tqdm>=4.30.0"],
     entry_points={"console_scripts": ["realpython=reader.__main__:main"]},
 )
