@@ -19,5 +19,6 @@ from . import coordinates
 from . import metrics
 from . import tensor_numpy_adapter
 from . import losses
+from . import estimators
 
 __version__ = "0.0.6"

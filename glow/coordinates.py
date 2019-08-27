@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 from torch import nn
+import glow.estimators as estimator_module
 
 # from glow.utils import estimators as E
 
@@ -15,6 +16,7 @@ class IP_Coordinates:
         self.data_values = data_values
         self.estimator = estimator
         self.params = params
+        self.criterion = estimator_module.get(estimator, params)
         epoch_coord = []
         for epoch_output in data_values:
             batch_coord = []
@@ -24,8 +26,8 @@ class IP_Coordinates:
                 layer_coord = []
                 for i in range(1, num_layers):
                     t = batch_output[i]
-                    # I_x = E.criterion(estimator, params)(t, x)
-                    # I_y = E.criterion(estimator, params)(t, y)
+                    I_x = self.criterion(t, x)
+                    I_y = self.criterion(t, y)
                     I_x = 0
                     I_y = 0
                     layer_coord.append([I_x, I_y])

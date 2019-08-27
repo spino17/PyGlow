@@ -146,11 +146,11 @@ class _Network(nn.Module):
         # plot the loss vs epoch graphs
         if show_plot:
             plt.title("Epoch vs Loss")
-            plt.xlabel('epochs')
-            plt.ylabel('loss')
+            plt.xlabel("epochs")
+            plt.ylabel("loss")
             plt.grid(True)
-            plt.plot(epochs, train_losses, color="red", label='training loss')
-            plt.plot(epochs, val_losses, color="blue", label='validation loss')
+            plt.plot(epochs, train_losses, color="red", label="training loss")
+            plt.plot(epochs, val_losses, color="blue", label="validation loss")
             plt.show()
 
     def fit(
@@ -265,11 +265,11 @@ class SequentialIB(_Network):
         # plot the loss vs epoch graphs
         if show_plot:
             plt.title("Epoch vs Loss")
-            plt.xlabel('epochs')
-            plt.ylabel('loss')
+            plt.xlabel("epochs")
+            plt.ylabel("loss")
             plt.grid(True)
-            plt.plot(epochs, train_losses, color="red", label='training loss')
-            plt.plot(epochs, val_losses, color="blue", label='validation loss')
+            plt.plot(epochs, train_losses, color="red", label="training loss")
+            plt.plot(epochs, val_losses, color="blue", label="validation loss")
             plt.show()
 
     def IP_plot(self):
