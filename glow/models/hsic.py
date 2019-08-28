@@ -87,11 +87,14 @@ class _HSIC(_Network):
             plt.show()
 
 
-class SequentialHSIC(_HSIC):
+class HSICSequential(_HSIC):
     def __init__(self, input_shape, sigma, regularize_coeff):
         super().__init__(input_shape, sigma, regularize_coeff)
 
-class SigmaNetwork(_HSIC):
+
+"""
+class HSICSigma(_HSIC):
     def __init__(self, input_shape, regularize_coeff):
         # TODO
         return 0
+"""

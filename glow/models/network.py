@@ -187,7 +187,7 @@ class Sequential(_Network):
         super().__init__(input_shape)
 
 
-class SequentialIB(_Network):
+class IBSequential(_Network):
     """
     Class that attaches Information Bottleneck functionalities
     with the model to analyses the dynamics of training.

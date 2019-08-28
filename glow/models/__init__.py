@@ -1,2 +1,2 @@
 from .network import Sequential
-from .network import SequentialIB
+from .network import IBSequential

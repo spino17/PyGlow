@@ -2,6 +2,7 @@ import random
 from glow.utils import Hash as H
 import math
 import torch
+import glow.utils.hsic_utils as kernel_module
 
 
 class _Estimator:
@@ -20,20 +21,11 @@ class _Estimator:
         pass
 
 
-class Binned(_Estimator):
-    """
-    Basic technique for estimating mutual information
-
-    """
-
-    def __init__(self, num_bins):
-        super().__init__([num_bins])
-
-    def mutual_information(self, x, y):
-        return 0
-
-
 """
+class Binned(_Estimator):
+    # TODO
+
+
 class KDE(_Estimator):
     # TODO
 
@@ -107,10 +99,8 @@ class HSIC(_Estimator):
     def HS_Criterion(self, x, y):
         sigma = self.params[0]
         m = x.shape[0]
-        d_x = x.shape[1]
-        d_y = y.shape[1]
-        K_x = torch.ones(m, m)
-        K_y = torch.ones(m, m)
+        K_x = kernel_module.get("gaussian")(x, x, sigma)
+        K_y = kernel_module.get("gaussian")(y, y, sigma)
         H = torch.eye(m, m) - (1 / m) * torch.ones(m, m)
         matrix_x = torch.mm(K_x, H)
         matrix_y = torch.mm(K_y, H)
