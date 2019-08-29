@@ -17,16 +17,22 @@ class _Network(nn.Module):
 
     """
 
-    def __init__(self, input_shape):
+    def __init__(self, input_shape, gpu=True):
         super().__init__()
         self.input_shape = input_shape  # input dimensions
         self.layer_list = nn.ModuleList([])  # list of module type layers
         self.num_layers = 0  # number of layers in the architecture
         self.adapter_obj = tensor_numpy_adapter.get()
-        if torch.cuda.is_available():
-            print("running on cuda enabled GPU")
+        if gpu:
+            if torch.cuda.is_available():
+                self.device = torch.device("cuda")
+                print("Running on CUDA enabled device !")
+            else:
+                raise Exception("No CUDA enabled GPU device found")
         else:
-            print("running on CPU environment")
+            self.device = torch.device("cpu")
+            print("Running on CPU device !")
+        self.is_gpu = gpu
 
     def add(self, layer_obj):
         if self.num_layers == 0:
@@ -90,6 +96,7 @@ class _Network(nn.Module):
         return metric_dict
 
     def training_loop(self, num_epochs, train_loader, val_loader, show_plot=True):
+        self.to(self.device)
         train_losses, val_losses, epochs = [], [], []
         train_len = len(train_loader)
         val_len = len(val_loader)
@@ -98,10 +105,10 @@ class _Network(nn.Module):
             # training loop
             print("Epoch " + str(epoch + 1) + "/" + str(num_epochs))
             train_loss = 0
-            self.train()
             print("Training loop: ")
             pbar = tqdm(total=train_len)
             for x, y in train_loader:
+                x, y = x.to(self.device), y.to(self.device)
                 self.optimizer.zero_grad()
                 y_pred = self.forward(x)
                 loss = self.criterion(y_pred, y)
@@ -127,6 +134,7 @@ class _Network(nn.Module):
                     print("Validation loop: ")
                     pbar = tqdm(total=val_len)
                     for x, y in val_loader:
+                        x, y = x.to(self.device), y.to(self.device)
                         y_pred = self.forward(x)
                         val_loss += self.criterion(y_pred, y).item()
                         pbar.update(1)
@@ -142,6 +150,7 @@ class _Network(nn.Module):
                 train_losses.append(train_loss / train_len)
                 val_losses.append(val_loss / val_len)
                 epochs.append(epoch + 1)
+                self.train()
 
         # plot the loss vs epoch graphs
         if show_plot:
@@ -168,6 +177,7 @@ class _Network(nn.Module):
         self.training_loop(num_epochs, train_loader, val_loader, show_plot=show_plot)
 
     def fit_generator(self, train_loader, val_loader, num_epochs, show_plot=True):
+        self.cuda()
         self.training_loop(num_epochs, train_loader, val_loader, show_plot)
 
     def predict(self, x):

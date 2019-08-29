@@ -8,7 +8,7 @@ def gaussian_kernel(x, y, sigma):
     x = x.view(m, 1, vec_dim)
     y = y.view(m, vec_dim)
     z = (x - y).float()
-    return torch.exp(-1 / (2 * sigma ** 2) * torch.norm(z, dim=2) ** 2)
+    return torch.exp((-1 / (2 * (sigma ** 2))) * (torch.norm(z, dim=2) ** 2))
 
 
 def get(kernel):

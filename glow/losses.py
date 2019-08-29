@@ -11,8 +11,8 @@ def NLLLoss(y_pred, y_true):
     return nn.NLLLoss()(y_pred, y_true)
 
 
-def HSICLoss(z, x, y, sigma, regularize_coeff):
-    estimator = HSIC(sigma)
+def HSICLoss(z, x, y, sigma, regularize_coeff, gpu):
+    estimator = HSIC(sigma, gpu)
     y = one_hot(y, num_classes=-1).float()
     loss_1 = estimator.HS_Criterion(z, x)
     loss_2 = estimator.HS_Criterion(z, y)

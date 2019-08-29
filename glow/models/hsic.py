@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import glow.losses as losses_module
 from glow.utils import Optimizers as O
 from glow.layers.core import Flatten, Dropout
+from tqdm import tqdm
 
 
 class _HSIC(_Network):
@@ -13,10 +14,11 @@ class _HSIC(_Network):
 
     """
 
-    def __init__(self, input_shape, sigma, regularize_coeff):
+    def __init__(self, input_shape, sigma, regularize_coeff, gpu=True):
         super().__init__(input_shape)
         self.sigma = sigma
         self.regularize_coeff = regularize_coeff
+        self.is_gpu = gpu
 
     def forward(self, x):
         layers = self.layer_list
@@ -57,6 +59,7 @@ class _HSIC(_Network):
         self.metrics = metrics
 
     def training_loop(self, num_epochs, train_loader, val_loader, show_plot=True):
+        self.to(self.device)
         train_losses, val_losses, epochs = [], [], []
         train_len = len(train_loader)
         val_len = len(val_loader)
@@ -66,9 +69,10 @@ class _HSIC(_Network):
             train_loss = 0
             self.train()
             print("Training loop: ")
+            pbar = tqdm(total=train_len)
             for x, y in train_loader:
-                print("batch_")
                 # contains the hidden representation from forward pass
+                x, y = x.to(self.device), y.to(self.device)
                 hidden_outputs = self.forward(x)
                 # ** NOTE - This can be done in parallel !
                 for idx, z in enumerate(hidden_outputs):
@@ -80,26 +84,40 @@ class _HSIC(_Network):
                             y,
                             self.sigma,
                             self.regularize_coeff,
+                            self.is_gpu,
                         )
                         loss.backward()
                         self.layer_optimizers[idx].step()
                         train_loss += loss.item()
-                else:
-                    val_loss = 0
-                    with torch.no_grad():
-                        for x, y in val_loader:
-                            hidden_outputs = self.forward(x)
-                            for idx, z in enumerate(hidden_outputs):
-                                val_loss += self.criterion(
-                                    z,
-                                    x.view(x.shape[0], -1),
-                                    y,
-                                    self.sigma,
-                                    self.regularize_coeff,
-                                ).item()
-                    train_losses.append(train_loss / train_len)
-                    val_losses.append(val_loss / val_len)
-                    epochs.append(epoch + 1)
+                pbar.update(1)
+            else:
+                # validation loop
+                pbar.close()
+                val_loss = 0
+                print("\n")
+                with torch.no_grad():
+                    # scope of no gradient calculations
+                    print("Validation loop: ")
+                    pbar = tqdm(total=val_len)
+                    for x, y in val_loader:
+                        x, y = x.to(self.device), y.to(self.device)
+                        hidden_outputs = self.forward(x)
+                        # ** NOTE - This can be done in parallel !
+                        for idx, z in enumerate(hidden_outputs):
+                            val_loss += self.criterion(
+                                z,
+                                x.view(x.shape[0], -1),
+                                y,
+                                self.sigma,
+                                self.regularize_coeff,
+                                self.is_gpu,
+                            ).item()
+                        pbar.update(1)
+                    pbar.close()
+                    print("\n")
+                train_losses.append(train_loss / train_len)
+                val_losses.append(val_loss / val_len)
+                epochs.append(epoch + 1)
 
         # plot the loss vs epoch graphs
         if show_plot:
@@ -113,8 +131,8 @@ class _HSIC(_Network):
 
 
 class HSICSequential(_HSIC):
-    def __init__(self, input_shape, sigma, regularize_coeff):
-        super().__init__(input_shape, sigma, regularize_coeff)
+    def __init__(self, input_shape, sigma, regularize_coeff, gpu):
+        super().__init__(input_shape, sigma, regularize_coeff, gpu)
 
 
 """

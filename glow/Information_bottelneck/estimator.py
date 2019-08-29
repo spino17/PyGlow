@@ -13,8 +13,15 @@ class _Estimator:
 
     """
 
-    def __init__(self, params):
+    def __init__(self, params, gpu=True):
         self.params = params  # input parameters for the estimator
+        if gpu:
+            if torch.cuda.is_available():
+                self.device = torch.device("cuda")
+            else:
+                raise Exception("No CUDA enabled GPU device found")
+        else:
+            self.device = torch.device("cpu")
 
     # returns mutual information between x and y random variable
     def mutual_information(self, x, y):
@@ -93,15 +100,17 @@ class HSIC(_Estimator):
 
     """
 
-    def __init__(self, sigma):
-        super().__init__([sigma])
+    def __init__(self, sigma, gpu):
+        super().__init__([sigma], gpu)
 
     def HS_Criterion(self, x, y):
+        x, y = x.to(self.device), y.to(self.device)
         sigma = self.params[0]
         m = x.shape[0]
         K_x = kernel_module.get("gaussian")(x, x, sigma)
         K_y = kernel_module.get("gaussian")(y, y, sigma)
         H = torch.eye(m, m) - (1 / m) * torch.ones(m, m)
+        H = H.to(self.device)
         matrix_x = torch.mm(K_x, H)
         matrix_y = torch.mm(K_y, H)
         return (1 / (m - 1)) * torch.trace(torch.mm(matrix_x, matrix_y))
