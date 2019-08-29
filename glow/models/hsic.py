@@ -4,6 +4,7 @@ from glow.models.network import _Network
 import matplotlib.pyplot as plt
 import glow.losses as losses_module
 from glow.utils import Optimizers as O
+from glow.layers.core import Flatten, Dropout
 
 
 class _HSIC(_Network):
@@ -29,6 +30,17 @@ class _HSIC(_Network):
             iter_num += 1
         return hidden_outputs
 
+    def make_layer_optimizers(self, optimizer, learning_rate, momentum):
+        optimizer_list = []
+        for layer in self.layer_list:
+            if isinstance(layer[0], Flatten) or isinstance(layer[0], Dropout):
+                optimizer_list.append(None)
+            else:
+                optimizer_list.append(
+                    O.optimizer(layer.parameters(), learning_rate, momentum, optimizer)
+                )
+        return optimizer_list
+
     def compile(
         self,
         optimizer="SGD",
@@ -39,8 +51,8 @@ class _HSIC(_Network):
     ):
         # raise exception
         self.criterion = losses_module.get(loss)
-        self.optimizer = O.optimizer(
-            self.parameters(), learning_rate, momentum, optimizer
+        self.layer_optimizers = self.make_layer_optimizers(
+            optimizer, learning_rate, momentum
         )
         self.metrics = metrics
 
@@ -55,22 +67,35 @@ class _HSIC(_Network):
             self.train()
             print("Training loop: ")
             for x, y in train_loader:
+                print("batch_")
                 # contains the hidden representation from forward pass
                 hidden_outputs = self.forward(x)
                 # ** NOTE - This can be done in parallel !
-                for z in hidden_outputs:
-                    loss = self.criterion(z, x, y, self.sigma, self.regularize_coeff)
-                    loss.backward()
-                    self.optimizer.step()
-                    train_loss += loss.item()
+                for idx, z in enumerate(hidden_outputs):
+                    if self.layer_optimizers[idx] is not None:
+                        self.layer_optimizers[idx].zero_grad()
+                        loss = self.criterion(
+                            z,
+                            x.view(x.shape[0], -1),
+                            y,
+                            self.sigma,
+                            self.regularize_coeff,
+                        )
+                        loss.backward()
+                        self.layer_optimizers[idx].step()
+                        train_loss += loss.item()
                 else:
                     val_loss = 0
                     with torch.no_grad():
                         for x, y in val_loader:
                             hidden_outputs = self.forward(x)
-                            for z in hidden_outputs:
+                            for idx, z in enumerate(hidden_outputs):
                                 val_loss += self.criterion(
-                                    z, x, y, self.sigma, self.regularize_coeff
+                                    z,
+                                    x.view(x.shape[0], -1),
+                                    y,
+                                    self.sigma,
+                                    self.regularize_coeff,
                                 ).item()
                     train_losses.append(train_loss / train_len)
                     val_losses.append(val_loss / val_len)

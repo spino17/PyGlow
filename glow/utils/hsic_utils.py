@@ -5,7 +5,6 @@ from torch import nn
 def gaussian_kernel(x, y, sigma):
     m = x.shape[0]
     vec_dim = x.shape[1]
-    print(m, vec_dim)
     x = x.view(m, 1, vec_dim)
     y = y.view(m, vec_dim)
     z = (x - y).float()

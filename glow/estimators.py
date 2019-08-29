@@ -1,9 +1,9 @@
-from glow.Information_bottelneck.estimator import Binned, EDGE, HSIC
+from glow.Information_bottelneck.estimator import EDGE, HSIC
 
 
 def get(estimator, params):
     if estimator == "binned":
-        return Binned(*params).mutual_information
+        return 0
     elif estimator == "EDGE":
         return EDGE(*params).mutual_information
     elif estimator == "HSIC":
