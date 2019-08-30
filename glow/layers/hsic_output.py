@@ -8,11 +8,12 @@ class HSICoutput(nn.Module):
 
     """
 
-    def __init__(self, output_dim, loss, activation="softmax"):
+    def __init__(self, output_dim, loss, activation, learning_rate):
         super().__init__()
         self.output_shape = (output_dim, 1)  # output_dim = number of classes
         self.loss = loss
         self.activation = activation
+        self.learning_rate = learning_rate
 
     def set_input(self, input_shape):
         self.input_shape = input_shape

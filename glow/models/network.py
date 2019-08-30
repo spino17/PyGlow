@@ -17,22 +17,14 @@ class _Network(nn.Module):
 
     """
 
-    def __init__(self, input_shape, gpu=True):
+    def __init__(self, input_shape, device, gpu):
         super().__init__()
         self.input_shape = input_shape  # input dimensions
         self.layer_list = nn.ModuleList([])  # list of module type layers
         self.num_layers = 0  # number of layers in the architecture
         self.adapter_obj = tensor_numpy_adapter.get()
-        if gpu:
-            if torch.cuda.is_available():
-                self.device = torch.device("cuda")
-                print("Running on CUDA enabled device !")
-            else:
-                raise Exception("No CUDA enabled GPU device found")
-        else:
-            self.device = torch.device("cpu")
-            print("Running on CPU device !")
         self.is_gpu = gpu
+        self.device = device
 
     def add(self, layer_obj):
         if self.num_layers == 0:
@@ -154,13 +146,16 @@ class _Network(nn.Module):
 
         # plot the loss vs epoch graphs
         if show_plot:
-            plt.title("Epoch vs Loss")
-            plt.xlabel("epochs")
-            plt.ylabel("loss")
-            plt.grid(True)
-            plt.plot(epochs, train_losses, color="red", label="training loss")
-            plt.plot(epochs, val_losses, color="blue", label="validation loss")
-            plt.show()
+            self.plot_losses(epochs, train_losses, val_losses)
+
+    def plot_loss(self, epochs, train_losses, val_losses):
+        plt.title("Epoch vs Loss")
+        plt.xlabel("epochs")
+        plt.ylabel("loss")
+        plt.grid(True)
+        plt.plot(epochs, train_losses, color="red", label="training loss")
+        plt.plot(epochs, val_losses, color="blue", label="validation loss")
+        plt.show()
 
     def fit(
         self,
@@ -177,7 +172,6 @@ class _Network(nn.Module):
         self.training_loop(num_epochs, train_loader, val_loader, show_plot=show_plot)
 
     def fit_generator(self, train_loader, val_loader, num_epochs, show_plot=True):
-        self.cuda()
         self.training_loop(num_epochs, train_loader, val_loader, show_plot)
 
     def predict(self, x):
@@ -193,8 +187,17 @@ class Sequential(_Network):
 
     """
 
-    def __init__(self, input_shape):
-        super().__init__(input_shape)
+    def __init__(self, input_shape, gpu):
+        if gpu:
+            if torch.cuda.is_available():
+                device = torch.device("cuda")
+                print("Running on CUDA enabled device !")
+            else:
+                raise Exception("No CUDA enabled GPU device found")
+        else:
+            device = torch.device("cpu")
+            print("Running on CPU device !")
+        super().__init__(input_shape, device, gpu)
 
 
 class IBSequential(_Network):

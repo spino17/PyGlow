@@ -5,20 +5,33 @@ import matplotlib.pyplot as plt
 import glow.losses as losses_module
 from glow.utils import Optimizers as O
 from glow.layers.core import Flatten, Dropout
+from glow.layers import HSICoutput
 from tqdm import tqdm
 
 
-class _HSIC(_Network):
+class HSIC(_Network):
     """
     The HSIC Bottelneck: Deep Learning without backpropagation
 
     """
 
-    def __init__(self, input_shape, sigma, regularize_coeff, gpu=True):
-        super().__init__(input_shape)
+    def __init__(self, input_shape, sigma, regularize_coeff, device, gpu=True):
+        super().__init__(input_shape, device, gpu)
         self.sigma = sigma
         self.regularize_coeff = regularize_coeff
-        self.is_gpu = gpu
+
+    def init_layer(layer):
+        # TODO
+        return 0
+
+    def add(self, layer_obj):
+        if self.num_layers == 0:
+            prev_input_shape = self.input_shape
+        else:
+            prev_input_shape = self.layer_list[self.num_layers - 1][-1].output_shape
+        layer_obj.set_input(prev_input_shape)
+        self.layer_list.append(self._make_layer_unit(layer_obj))
+        self.num_layers = self.num_layers + 1
 
     def forward(self, x):
         layers = self.layer_list
@@ -26,13 +39,18 @@ class _HSIC(_Network):
         iter_num = 0
         hidden_outputs = []
         for layer_idx, layer in enumerate(layers):
-            if layer_idx == self.num_layers - 1:
-                break
             h = layer(t)
             hidden_outputs.append(h)
             t = h.detach()  # detached vector to cut of the previous gradients
             iter_num += 1
         return hidden_outputs
+
+    def sequential_forward(self, x):
+        layers = self.layer_list
+        h = x
+        for layer_idx, layer in enumerate(layers):
+            h = layer(h)
+        return h
 
     def make_layer_optimizers(self, optimizer, learning_rate, momentum):
         optimizer_list = []
@@ -60,21 +78,12 @@ class _HSIC(_Network):
         )
         self.metrics = metrics
 
-    def training_loop(
-        self, pre_num_epochs, train_loader, val_loader, show_plot=True
-    ):
-        post_num_epochs = pre_num_epochs
+    def pre_training_loop(self, num_epochs, train_loader, val_loader):
         self.to(self.device)
-        train_losses, val_losses, epochs = [], [], []
         train_len = len(train_loader)
-        val_len = len(val_loader)
-        metric_dict = self.handle_metrics(self.metrics)
-        print("pre-training phase starting ...")
-        for epoch in range(pre_num_epochs):
-            # training loop
-            print("Pre-Train-Epoch " + str(epoch + 1) + "/" + str(pre_num_epochs))
-            self.train()
-            print("Training loop: ")
+        for epoch in range(num_epochs):
+            # pre-training loop
+            print("Pre-Train-Epoch " + str(epoch + 1) + "/" + str(num_epochs))
             pbar = tqdm(total=train_len)
             for x, y in train_loader:
                 # contains the hidden representation from forward pass
@@ -95,67 +104,103 @@ class _HSIC(_Network):
                         loss.backward()
                         self.layer_optimizers[idx].step()
                 pbar.update(1)
-            """
-            else:
-                # validation loop
-                pbar.close()
-                val_loss = 0
-                print("\n")
-                with torch.no_grad():
-                    # scope of no gradient calculations
-                    print("Validation loop: ")
-                    pbar = tqdm(total=val_len)
-                    for x, y in val_loader:
-                        x, y = x.to(self.device), y.to(self.device)
-                        hidden_outputs = self.forward(x)
-                        # ** NOTE - This can be done in parallel !
-                        for idx, z in enumerate(hidden_outputs):
-                            val_loss += self.criterion(
-                                z,
-                                x.view(x.shape[0], -1),
-                                y,
-                                self.sigma,
-                                self.regularize_coeff,
-                                self.is_gpu,
-                            ).item()
-                        pbar.update(1)
-                    pbar.close()
-                    print("\n")
-                train_losses.append(train_loss / train_len)
-                val_losses.append(val_loss / val_len)
-                epochs.append(epoch + 1)
-            """
+            pbar.close()
 
-        print("post-training phase starting ...")
-        criterion = losses_module.get(self.layer_list[-1][0].loss)
-        # freeze the pre-trained grads
+    def freeze_hidden_grads(self):
         for layer_idx, layer in enumerate(self.layer_list):
-            if layer_idx == self.num_layers - 1:
-                break
             for params in layer.parameters():
-                params.require_grad = False
+                params.requires_grad = False
 
+
+class HSICSigma(nn.Module):
+    """
+    Ensemble various values of sigma to capture dependence at various scales
+    and give aggregate output - Sigma Network
+
+    """
+
+    def __init__(self, input_shape, sigma_set, regularize_coeff, gpu):
+        if gpu:
+            if torch.cuda.is_available():
+                device = torch.device("cuda")
+                print("Running on CUDA enabled device !")
+            else:
+                raise Exception("No CUDA enabled GPU device found")
+        else:
+            device = torch.device("cpu")
+            print("Running on CPU device !")
+        super().__init__()
+        self.model_list = nn.ModuleList([])
+        self.num_models = 0
+        # ** NOTE - This can be done in parallel !
+        for sigma in sigma_set:
+            self.num_models += 1
+            self.model_list.append(
+                HSIC(input_shape, sigma, regularize_coeff, device, gpu)
+            )
+
+    def add(self, layer_obj):
+        # ** NOTE - This can be done in parallel !
+        if isinstance(layer_obj, HSICoutput):
+            prev_input_shape = self.model_list[0].layer_list[-1][-1].output_shape
+            layer_obj.set_input(prev_input_shape)
+            self.model_list.append(nn.Sequential(layer_obj))
+        else:
+            for model in self.model_list:
+                model.add(layer_obj)
+
+    def compile(self, optimizer, loss, metrics, learning_rate=0.001, momentum=0.95):
+        # ** NOTE - This can be done in parallel !
+        for model_idx, model in enumerate(self.model_list):
+            if model_idx == self.num_models:
+                self.output_criterion = losses_module.get(model[0].loss)
+                self.output_optimizer = O.optimizer(
+                    model.parameters(), model[0].learning_rate, momentum, optimizer
+                )
+            else:
+                model.compile(optimizer, loss, learning_rate, momentum)
+
+    def training_loop(
+        self, train_loader, val_loader, pre_num_epochs, post_num_epochs, show_plot
+    ):
+        print("Pre Training phase starting ...")
+        # ** NOTE - This can be done in parallel !
+        for model_idx, model in enumerate(self.model_list):
+            if model_idx < self.num_models:
+                print("Pre-Training HSIC segment model - (" + str(model.sigma) + ")")
+                model.pre_training_loop(pre_num_epochs, train_loader, val_loader)
+                model.freeze_hidden_grads()  # freeze the grads of all the HSIC segments
+
+        print("Post Training phase starting ...")
+        train_losses, val_losses, epochs = [], [], []
+        train_len = len(train_loader)
+        val_len = len(val_loader)
+        metric_dict = self.handle_metrics(self.metrics)
         for epoch in range(post_num_epochs):
-            train_loss = 0
-            # training loop
-            print("Post-Train-Epoch " + str(epoch + 1) + "/" + str(post_num_epochs))
+            print("Epoch " + str(epoch + 1) + "/" + str(post_num_epochs))
             train_loss = 0
             print("Training loop: ")
             pbar = tqdm(total=train_len)
             for x, y in train_loader:
                 x, y = x.to(self.device), y.to(self.device)
-                self.layer_optimizers[-1].zero_grad()
-                h = x
-                for layer in self.layer_list:
-                    h = layer(h)
-                y_pred = h
-                loss = criterion(y_pred, y)
+                self.output_optimizer.zero_grad()
+                dim_0 = x.shape[0]
+                dim_1 = self.model_list[0].layer_list[-1][-1].output_shape[0]
+                h = torch.zeros(dim_0, dim_1)
+                # ** NOTE - This can be done in parallel !
+                for model_idx, model in enumerate(self.model_list):
+                    if model_idx == self.num_models:
+                        y_pred = model(h)
+                    else:
+                        h += model.sequential_forward(
+                            x
+                        )  # aggregating all the representations from HSIC segments
+                loss = self.output_criterion(y_pred, y)
                 loss.backward()
-                self.layer_optimizers[-1].step()
+                self.output_optimizer.step()
                 train_loss += loss.item()
                 pbar.update(1)
             else:
-                # validation loop
                 pbar.close()
                 metric_values = []
                 for key in metric_dict:
@@ -168,16 +213,22 @@ class _HSIC(_Network):
                 self.eval()
                 val_loss = 0
                 with torch.no_grad():
-                    # scope of no gradient calculations
                     print("Validation loop: ")
                     pbar = tqdm(total=val_len)
                     for x, y in val_loader:
                         x, y = x.to(self.device), y.to(self.device)
-                        h = x
-                        for layer in self.layer_list:
-                            h = layer(h)
-                        y_pred = h
-                        val_loss += criterion(y_pred, y).item()
+                        dim_0 = x.shape[0]
+                        dim_1 = self.model_list[0].layer_list[-1][0].output_shape[0]
+                        h = torch.zeros(dim_0, dim_1)
+                        # ** NOTE - This can be done in parallel !
+                        for model_idx, model in enumerate(self.model_list):
+                            if model_idx == self.num_models:
+                                y_pred = model(h)
+                            else:
+                                h += model.sequential_forward(
+                                    x
+                                )  # aggregating all the representations from HSIC segments
+                        val_loss += self.criterion(y_pred, y).item()
                         pbar.update(1)
                     pbar.close()
                     metric_values = []
@@ -195,23 +246,11 @@ class _HSIC(_Network):
 
         # plot the loss vs epoch graphs
         if show_plot:
-            plt.title("Epoch vs Loss")
-            plt.xlabel("epochs")
-            plt.ylabel("loss")
-            plt.grid(True)
-            plt.plot(epochs, train_losses, color="red", label="training loss")
-            plt.plot(epochs, val_losses, color="blue", label="validation loss")
-            plt.show()
+            self.plot_losses(epochs, train_losses, val_losses)
 
-
-class HSICSequential(_HSIC):
-    def __init__(self, input_shape, sigma, regularize_coeff, gpu):
-        super().__init__(input_shape, sigma, regularize_coeff, gpu)
-
-
-"""
-class HSICSigma(_HSIC):
-    def __init__(self, input_shape, regularize_coeff):
-        # TODO
-        return 0
-"""
+    def fit_generator(
+        self, train_loader, val_loader, pre_num_epochs, post_num_epochs, show_plot=True
+    ):
+        self.training_loop(
+            train_loader, val_loader, pre_num_epochs, post_num_epochs, show_plot
+        )
