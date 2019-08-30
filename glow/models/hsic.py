@@ -61,8 +61,9 @@ class _HSIC(_Network):
         self.metrics = metrics
 
     def training_loop(
-        self, pre_num_epochs, post_num_epochs, train_loader, val_loader, show_plot=True
+        self, pre_num_epochs, train_loader, val_loader, show_plot=True
     ):
+        post_num_epochs = pre_num_epochs
         self.to(self.device)
         train_losses, val_losses, epochs = [], [], []
         train_len = len(train_loader)
@@ -71,8 +72,7 @@ class _HSIC(_Network):
         print("pre-training phase starting ...")
         for epoch in range(pre_num_epochs):
             # training loop
-            print("Epoch " + str(epoch + 1) + "/" + str(pre_num_epochs))
-            train_loss = 0
+            print("Pre-Train-Epoch " + str(epoch + 1) + "/" + str(pre_num_epochs))
             self.train()
             print("Training loop: ")
             pbar = tqdm(total=train_len)
@@ -82,8 +82,6 @@ class _HSIC(_Network):
                 hidden_outputs = self.forward(x)
                 # ** NOTE - This can be done in parallel !
                 for idx, z in enumerate(hidden_outputs):
-                    if idx == self.num_layers - 1:
-                        break
                     if self.layer_optimizers[idx] is not None:
                         self.layer_optimizers[idx].zero_grad()
                         loss = self.criterion(
@@ -96,8 +94,8 @@ class _HSIC(_Network):
                         )
                         loss.backward()
                         self.layer_optimizers[idx].step()
-                        train_loss += loss.item()
                 pbar.update(1)
+            """
             else:
                 # validation loop
                 pbar.close()
@@ -112,8 +110,6 @@ class _HSIC(_Network):
                         hidden_outputs = self.forward(x)
                         # ** NOTE - This can be done in parallel !
                         for idx, z in enumerate(hidden_outputs):
-                            if idx == self.num_layers - 1:
-                                break
                             val_loss += self.criterion(
                                 z,
                                 x.view(x.shape[0], -1),
@@ -128,6 +124,7 @@ class _HSIC(_Network):
                 train_losses.append(train_loss / train_len)
                 val_losses.append(val_loss / val_len)
                 epochs.append(epoch + 1)
+            """
 
         print("post-training phase starting ...")
         criterion = losses_module.get(self.layer_list[-1][0].loss)
@@ -139,8 +136,9 @@ class _HSIC(_Network):
                 params.require_grad = False
 
         for epoch in range(post_num_epochs):
+            train_loss = 0
             # training loop
-            print("Epoch " + str(epoch + 1) + "/" + str(post_num_epochs))
+            print("Post-Train-Epoch " + str(epoch + 1) + "/" + str(post_num_epochs))
             train_loss = 0
             print("Training loop: ")
             pbar = tqdm(total=train_len)
@@ -153,7 +151,7 @@ class _HSIC(_Network):
                 y_pred = h
                 loss = criterion(y_pred, y)
                 loss.backward()
-                self.layer_optimizer[-1].step()
+                self.layer_optimizers[-1].step()
                 train_loss += loss.item()
                 pbar.update(1)
             else:
