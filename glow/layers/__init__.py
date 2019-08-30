@@ -13,3 +13,4 @@ from .pooling import AvgPool3d
 from .normalization import BatchNorm1d
 from .normalization import BatchNorm2d
 from .normalization import BatchNorm3d
+from .hsic_output import HSICoutput
