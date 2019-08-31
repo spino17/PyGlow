@@ -45,6 +45,7 @@ class _Pooling1d(nn.Module):
 class MaxPool1d(_Pooling1d):
     def __init__(self, kernel_size, stride, padding, dilation=1):
         super().__init__("Max", kernel_size, stride, padding, dilation)
+        self.args = [kernel_size, stride, padding, dilation]
 
     def set_input(self, input_shape):
         super().set_input(input_shape)
@@ -56,6 +57,7 @@ class MaxPool1d(_Pooling1d):
 class AvgPool1d(_Pooling1d):
     def __init__(self, kernel_size, stride, padding):
         super().__init__("Avg", kernel_size, stride, padding, 1)
+        self.args = [kernel_size, stride, padding]
 
     def set_input(self, input_shape):
         super().set_input(input_shape)
@@ -125,6 +127,7 @@ class _Pooling2d(nn.Module):
 class MaxPool2d(_Pooling2d):
     def __init__(self, kernel_size, stride, padding, dilation=1):
         super().__init__("Max", kernel_size, stride, padding, dilation)
+        self.args = [kernel_size, stride, padding, dilation]
 
     def set_input(self, input_shape):
         super().set_input(input_shape)
@@ -136,6 +139,7 @@ class MaxPool2d(_Pooling2d):
 class AvgPool2d(_Pooling2d):
     def __init__(self, kernel_size, stride, padding):
         super().__init__("Avg", kernel_size, stride, padding, (1, 1))
+        self.args = [kernel_size, stride, padding]
 
     def set_input(self, input_shape):
         super().set_input(input_shape)
@@ -216,6 +220,7 @@ class _Pooling3d(nn.Module):
 class MaxPool3d(_Pooling3d):
     def __init__(self, kernel_size, stride, padding, dilation=1):
         super().__init__("Max", kernel_size, stride, padding, dilation)
+        self.args = [kernel_size, stride, padding, dilation]
 
     def set_input(self, input_shape):
         super().set_input(input_shape)
@@ -227,6 +232,7 @@ class MaxPool3d(_Pooling3d):
 class AvgPool3d(_Pooling3d):
     def __init__(self, kernel_size, stride, padding):
         super().__init__("Avg", kernel_size, stride, padding, (1, 1, 1))
+        self.args = [kernel_size, stride, padding]
 
     def set_input(self, input_shape):
         super().set_input(input_shape)

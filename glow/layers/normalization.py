@@ -32,6 +32,7 @@ class _BatchNorm(nn.Module):
 class BatchNorm1d(_BatchNorm):
     def __init__(self, num_features, eps=1e-05, momentum=0.1):
         super().__init__(1, num_features, eps, momentum)
+        self.args = [num_features, eps, momentum]
 
     def set_input(self, input_shape):
         super().set_input(input_shape)
@@ -43,6 +44,7 @@ class BatchNorm1d(_BatchNorm):
 class BatchNorm2d(_BatchNorm):
     def __init__(self, eps=1e-05, momentum=0.1):
         super().__init__(2, eps, momentum)
+        self.args = [eps, momentum]
 
     def set_input(self, input_shape):
         super().set_input(input_shape)
@@ -54,6 +56,7 @@ class BatchNorm2d(_BatchNorm):
 class BatchNorm3d(_BatchNorm):
     def __init__(self, eps=1e-05, momentum=0.1):
         super().__init__(3, eps, momentum)
+        self.args = [eps, momentum]
 
     def set_input(self, input_shape):
         super().set_input(input_shape)

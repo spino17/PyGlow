@@ -20,19 +20,6 @@ class HSIC(_Network):
         self.sigma = sigma
         self.regularize_coeff = regularize_coeff
 
-    def init_layer(layer):
-        # TODO
-        return 0
-
-    def add(self, layer_obj):
-        if self.num_layers == 0:
-            prev_input_shape = self.input_shape
-        else:
-            prev_input_shape = self.layer_list[self.num_layers - 1][-1].output_shape
-        layer_obj.set_input(prev_input_shape)
-        self.layer_list.append(self._make_layer_unit(layer_obj))
-        self.num_layers = self.num_layers + 1
-
     def forward(self, x):
         layers = self.layer_list
         t = x
@@ -67,7 +54,6 @@ class HSIC(_Network):
         self,
         optimizer="SGD",
         loss="HSIC_loss",
-        metrics=[],
         learning_rate=0.001,
         momentum=0.95,
     ):
@@ -76,13 +62,13 @@ class HSIC(_Network):
         self.layer_optimizers = self.make_layer_optimizers(
             optimizer, learning_rate, momentum
         )
-        self.metrics = metrics
 
     def pre_training_loop(self, num_epochs, train_loader, val_loader):
         self.to(self.device)
         train_len = len(train_loader)
         for epoch in range(num_epochs):
             # pre-training loop
+            print("\n")
             print("Pre-Train-Epoch " + str(epoch + 1) + "/" + str(num_epochs))
             pbar = tqdm(total=train_len)
             for x, y in train_loader:
@@ -138,6 +124,7 @@ class HSICSigma(nn.Module):
             self.model_list.append(
                 HSIC(input_shape, sigma, regularize_coeff, device, gpu)
             )
+        self.device = device
 
     def add(self, layer_obj):
         # ** NOTE - This can be done in parallel !
@@ -147,7 +134,11 @@ class HSICSigma(nn.Module):
             self.model_list.append(nn.Sequential(layer_obj))
         else:
             for model in self.model_list:
-                model.add(layer_obj)
+                if len(layer_obj.args) == 0:
+                    init_layer_obj = layer_obj.__class__()
+                else:
+                    init_layer_obj = layer_obj.__class__(*layer_obj.args)
+                model.add(init_layer_obj)
 
     def compile(self, optimizer, loss, metrics, learning_rate=0.001, momentum=0.95):
         # ** NOTE - This can be done in parallel !
@@ -157,25 +148,28 @@ class HSICSigma(nn.Module):
                 self.output_optimizer = O.optimizer(
                     model.parameters(), model[0].learning_rate, momentum, optimizer
                 )
+                self.metrics = metrics
             else:
                 model.compile(optimizer, loss, learning_rate, momentum)
 
     def training_loop(
         self, train_loader, val_loader, pre_num_epochs, post_num_epochs, show_plot
     ):
+        print("\n")
         print("Pre Training phase starting ...")
         # ** NOTE - This can be done in parallel !
         for model_idx, model in enumerate(self.model_list):
             if model_idx < self.num_models:
+                print("\n")
                 print("Pre-Training HSIC segment model - (" + str(model.sigma) + ")")
                 model.pre_training_loop(pre_num_epochs, train_loader, val_loader)
                 model.freeze_hidden_grads()  # freeze the grads of all the HSIC segments
-
+        print("\n")
         print("Post Training phase starting ...")
         train_losses, val_losses, epochs = [], [], []
         train_len = len(train_loader)
         val_len = len(val_loader)
-        metric_dict = self.handle_metrics(self.metrics)
+        metric_dict = self.model_list[0].handle_metrics(self.metrics)
         for epoch in range(post_num_epochs):
             print("Epoch " + str(epoch + 1) + "/" + str(post_num_epochs))
             train_loss = 0
@@ -186,9 +180,11 @@ class HSICSigma(nn.Module):
                 self.output_optimizer.zero_grad()
                 dim_0 = x.shape[0]
                 dim_1 = self.model_list[0].layer_list[-1][-1].output_shape[0]
-                h = torch.zeros(dim_0, dim_1)
+                h = torch.zeros(dim_0, dim_1).to(self.device)
                 # ** NOTE - This can be done in parallel !
                 for model_idx, model in enumerate(self.model_list):
+                    # print(model.is_cuda)
+                    model.to(self.device)
                     if model_idx == self.num_models:
                         y_pred = model(h)
                     else:
@@ -219,16 +215,17 @@ class HSICSigma(nn.Module):
                         x, y = x.to(self.device), y.to(self.device)
                         dim_0 = x.shape[0]
                         dim_1 = self.model_list[0].layer_list[-1][0].output_shape[0]
-                        h = torch.zeros(dim_0, dim_1)
+                        h = torch.zeros(dim_0, dim_1).to(self.device)
                         # ** NOTE - This can be done in parallel !
                         for model_idx, model in enumerate(self.model_list):
+                            model.to(self.device)
                             if model_idx == self.num_models:
                                 y_pred = model(h)
                             else:
                                 h += model.sequential_forward(
                                     x
                                 )  # aggregating all the representations from HSIC segments
-                        val_loss += self.criterion(y_pred, y).item()
+                        val_loss += self.output_criterion(y_pred, y).item()
                         pbar.update(1)
                     pbar.close()
                     metric_values = []
@@ -246,7 +243,7 @@ class HSICSigma(nn.Module):
 
         # plot the loss vs epoch graphs
         if show_plot:
-            self.plot_losses(epochs, train_losses, val_losses)
+            self.model_list[0].plot_losses(epochs, train_losses, val_losses)
 
     def fit_generator(
         self, train_loader, val_loader, pre_num_epochs, post_num_epochs, show_plot=True

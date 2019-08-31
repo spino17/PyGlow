@@ -151,6 +151,7 @@ class Conv1d(_Conv):
             activation=activation,
             **kwargs
         )
+        self.args = [filters, kernel_size, stride, padding, dilation, activation]
 
     def set_input(self, input_shape):
         super().set_input(input_shape)
@@ -188,6 +189,7 @@ class Conv2d(_Conv):
             activation=activation,
             **kwargs
         )
+        self.args = [filters, kernel_size, stride, padding, dilation, activation]
 
     def set_input(self, input_shape):
         super().set_input(input_shape)
@@ -218,6 +220,7 @@ class Conv3d(_Conv):
             activation=activation,
             **kwargs
         )
+        self.args = [filters, kernel_size, stride, padding, dilation, activation]
 
     def set_input(self, input_shape):
         super().set_input(input_shape)

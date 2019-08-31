@@ -10,6 +10,7 @@ class HSICoutput(nn.Module):
 
     def __init__(self, output_dim, loss, activation, learning_rate):
         super().__init__()
+        self.args = [output_dim, loss, activation, learning_rate]
         self.output_shape = (output_dim, 1)  # output_dim = number of classes
         self.loss = loss
         self.activation = activation

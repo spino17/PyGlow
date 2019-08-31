@@ -10,6 +10,7 @@ class Dense(nn.Module):
 
     def __init__(self, output_dim, activation=None):
         super(Dense, self).__init__()
+        self.args = [output_dim, activation]
         self.output_shape = (output_dim, 1)
         self.activation = activation
 
@@ -32,6 +33,7 @@ class Dropout(nn.Module):
 
     def __init__(self, prob):
         super(Dropout, self).__init__()
+        self.args = [prob]
         self.prob = prob
 
     def set_input(self, input_shape):
@@ -48,6 +50,9 @@ class Flatten(nn.Module):
     Class for flattening the input shape
 
     """
+    def __init__(self):
+        super().__init__()
+        self.args = []
 
     def set_input(self, input_shape):
         self.input_dim = input_shape
