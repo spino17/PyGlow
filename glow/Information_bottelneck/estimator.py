@@ -1,5 +1,5 @@
 import random
-from glow.utils import Hash as H
+import glow.hash_functions as hash_module
 import math
 import torch
 import glow.utils.hsic_utils as kernel_module
@@ -24,7 +24,7 @@ class _Estimator:
             self.device = torch.device("cpu")
 
     # returns mutual information between x and y random variable
-    def mutual_information(self, x, y):
+    def criterion(self, x, y):
         pass
 
 
@@ -58,17 +58,17 @@ class EDGE(_Estimator):
 
     """
 
-    def __init__(self, hash_function, epsilon, alpha=1):
+    def __init__(self, hash_function, epsilon, alpha, gpu):
         b = random.uniform(0, epsilon)
-        super().__init__([hash_function, epsilon, b, alpha])
+        super().__init__([epsilon, b, alpha])
+        self.hash_function = hash_function
 
     def g(self, x):
         return x * torch.log(x) * (1 / math.log(10))
 
-    def mutual_information(self, x, y):
-        h = H.hash_function(
-            self.params[0], self.params[1], self.parmas[2]
-        )  # hash function
+    # mutual information
+    def criterion(self, x, y):
+        h = hash_module.get(self.hash_function)
         num_sample = x.shape[0]
         F = self.params[3] * num_sample
         N = torch.zeros(F, 1)

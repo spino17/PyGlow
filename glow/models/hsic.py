@@ -51,11 +51,7 @@ class HSIC(_Network):
         return optimizer_list
 
     def compile(
-        self,
-        optimizer="SGD",
-        loss="HSIC_loss",
-        learning_rate=0.001,
-        momentum=0.95,
+        self, optimizer="SGD", loss="HSIC_loss", learning_rate=0.001, momentum=0.95
     ):
         # raise exception
         self.criterion = losses_module.get(loss)
@@ -243,7 +239,7 @@ class HSICSigma(nn.Module):
 
         # plot the loss vs epoch graphs
         if show_plot:
-            self.model_list[0].plot_losses(epochs, train_losses, val_losses)
+            self.model_list[0].plot_loss(epochs, train_losses, val_losses)
 
     def fit_generator(
         self, train_loader, val_loader, pre_num_epochs, post_num_epochs, show_plot=True

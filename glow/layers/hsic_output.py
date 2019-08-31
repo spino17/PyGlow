@@ -1,5 +1,5 @@
 from torch import nn
-from glow.utils import Activations as A
+import glow.activations as activation_module
 
 
 class HSICoutput(nn.Module):
@@ -21,4 +21,4 @@ class HSICoutput(nn.Module):
         self.weights = nn.Linear(self.input_shape[0], self.output_shape[0])
 
     def forward(self, x):
-        return A.activation_function(self.weights(x), self.activation)
+        return activation_module.get(self.activation)(self.weights(x))

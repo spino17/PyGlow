@@ -1,5 +1,5 @@
 from torch import nn
-from glow.utils import Activations as A
+import glow.activations as activation_module
 import math
 
 
@@ -127,7 +127,7 @@ class _Conv(nn.Module):
             self.output_shape = (C_out, D_out, H_out, W_out)
 
     def forward(self, x):
-        return A.activation_function(self.conv_layer(x), self.activation)
+        return activation_module.get(self.activation)(self.conv_layer(x))
 
 
 class Conv1d(_Conv):

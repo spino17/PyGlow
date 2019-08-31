@@ -1,5 +1,5 @@
 from torch import nn
-from glow.utils import Activations as A
+import glow.activations as activation_module
 
 
 class Dense(nn.Module):
@@ -21,7 +21,7 @@ class Dense(nn.Module):
         self.weights = nn.Linear(self.input_shape[0], self.output_shape[0])
 
     def forward(self, x):
-        x = A.activation_function(self.weights(x), self.activation)
+        x = activation_module.get(self.activation)(self.weights(x))
         return x
 
 
@@ -50,6 +50,7 @@ class Flatten(nn.Module):
     Class for flattening the input shape
 
     """
+
     def __init__(self):
         super().__init__()
         self.args = []
