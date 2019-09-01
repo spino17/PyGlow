@@ -14,15 +14,15 @@ def NLLLoss(y_pred, y_true):
 def HSICLoss(z, x, y, sigma, regularize_coeff, gpu):
     estimator = HSIC(sigma, gpu)
     y = one_hot(y, num_classes=-1).float()
-    loss_1 = estimator.HS_Criterion(z, x)
-    loss_2 = estimator.HS_Criterion(z, y)
+    loss_1 = estimator.criterion(z, x)
+    loss_2 = estimator.criterion(z, y)
     return loss_1 - regularize_coeff * loss_2
 
 
-def get(loss):
-    if loss == "cross_entropy":
+def get(identifier):
+    if identifier == "cross_entropy":
         return cross_entropy
-    elif loss == "NLLLoss":
+    elif identifier == "NLLLoss":
         return NLLLoss
-    elif loss == "HSIC_loss":
+    elif identifier == "HSIC_loss":
         return HSICLoss

@@ -15,11 +15,10 @@ __all__ = [
     "utils",
 ]
 
-from . import coordinates
+from . import dynamics
 from . import metrics
 from . import tensor_numpy_adapter
 from . import losses
-from . import estimators
 from . import activations
 from . import hash_functions
 

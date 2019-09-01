@@ -7,6 +7,7 @@ from glow.utils import Optimizers as O
 from glow.layers.core import Flatten, Dropout
 from glow.layers import HSICoutput
 from tqdm import tqdm
+from glow.preprocessing import DataGenerator
 
 
 class HSIC(_Network):
@@ -240,6 +241,28 @@ class HSICSigma(nn.Module):
         # plot the loss vs epoch graphs
         if show_plot:
             self.model_list[0].plot_loss(epochs, train_losses, val_losses)
+
+    def fit(
+        self,
+        x_train,
+        y_train,
+        batch_size,
+        pre_num_epochs,
+        post_num_epochs,
+        validation_split=0.2,
+        show_plot=True,
+    ):
+        data_obj = DataGenerator()
+        train_loader, val_loader = data_obj.prepare_numpy_data(
+            x_train, y_train, batch_size, validation_split
+        )
+        self.training_loop(
+            train_loader,
+            val_loader,
+            pre_num_epochs,
+            post_num_epochs,
+            show_plot=show_plot,
+        )
 
     def fit_generator(
         self, train_loader, val_loader, pre_num_epochs, post_num_epochs, show_plot=True

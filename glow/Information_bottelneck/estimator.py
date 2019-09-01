@@ -27,6 +27,10 @@ class _Estimator:
     def criterion(self, x, y):
         pass
 
+    # logic to process the smallest segment of the dynamics
+    def eval_dynamics_segment(self, dynamics_segment):
+        pass
+
 
 """
 class Binned(_Estimator):
@@ -103,7 +107,7 @@ class HSIC(_Estimator):
     def __init__(self, sigma, gpu):
         super().__init__([sigma], gpu)
 
-    def HS_Criterion(self, x, y):
+    def criterion(self, x, y):
         x, y = x.to(self.device), y.to(self.device)
         sigma = self.params[0]
         m = x.shape[0]
@@ -114,3 +118,14 @@ class HSIC(_Estimator):
         matrix_x = torch.mm(K_x, H)
         matrix_y = torch.mm(K_y, H)
         return (1 / (m - 1)) * torch.trace(torch.mm(matrix_x, matrix_y))
+
+    def eval_dynamics_segment(self, dynamics_segment):
+        segment_size = len(dynamics_segment)
+        x = dynamics_segment[0]
+        y = dynamics_segment[segment_size - 1]
+        output_segment = []
+        for idx in range(1, segment_size - 1):
+            h = dynamics_segment[idx]
+            output_segment.append([self.criterion(h, x), self.criterion(h, y)])
+
+        return output_segment

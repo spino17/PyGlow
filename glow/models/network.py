@@ -2,10 +2,11 @@ from torch import nn
 import torch
 import glow.losses as losses_module
 from glow.utils import Optimizers as O
+from glow.preprocessing import DataGenerator
 import glow.tensor_numpy_adapter as tensor_numpy_adapter
 from glow.preprocessing import DataGenerator
 import matplotlib.pyplot as plt
-import glow.coordinates as coordinates
+import glow.dynamics as dynamics_module
 import glow.metrics as metric_module
 from tqdm import tqdm
 
@@ -22,7 +23,6 @@ class _Network(nn.Module):
         self.input_shape = input_shape  # input dimensions
         self.layer_list = nn.ModuleList([])  # list of module type layers
         self.num_layers = 0  # number of layers in the architecture
-        self.adapter_obj = tensor_numpy_adapter.get()
         self.is_gpu = gpu
         self.device = device
         self.track_dynamics = track_dynamics
@@ -70,25 +70,10 @@ class _Network(nn.Module):
         )
         self.metrics = metrics
 
-    def prepare_numpy_data(self, x_train, y_train, batch_size, validation_split):
-        x_train, y_train = (
-            self.adapter_obj.to_tensor(x_train),
-            self.adapter_obj.to_tensor(y_train),
-        )
-        data_processor = DataGenerator()
-        data_processor.set_dataset(
-            x_train, y_train, batch_size, validation_split
-        )  # tensorise the dataset elements for further processing in pytorch nn module
-        train_loader = data_processor.get_trainloader()
-        val_loader = data_processor.get_validationloader()
-        return train_loader, val_loader
-
     def handle_metrics(self, metrics):
         metric_dict = {}
         for metric in metrics:
-            if metric == "accuracy":
-                metric_fn = metric_module.categorical_accuracy  # returns the function
-
+            metric_fn = metric_module.get(metric)  # returns the function
             metric_dict[metric] = metric_fn
 
         return metric_dict
@@ -166,7 +151,8 @@ class _Network(nn.Module):
                 epoch_collector.append(batch_collector)
 
         if self.track_dynamics:
-            self.dynamics_collector = epoch_collector
+            # self.dynamics_collector = epoch_collector
+            self.dynamics_handler = dynamics_module.get(epoch_collector)
 
         # plot the loss vs epoch graphs
         if show_plot:
@@ -181,7 +167,8 @@ class _Network(nn.Module):
         validation_split=0.2,
         show_plot=True,
     ):
-        train_loader, val_loader = self.prepare_numpy_data(
+        data_obj = DataGenerator()
+        train_loader, val_loader = data_obj.prepare_numpy_data(
             x_train, y_train, batch_size, validation_split
         )
         self.training_loop(num_epochs, train_loader, val_loader, show_plot=show_plot)
@@ -203,7 +190,7 @@ class Sequential(_Network):
 
     """
 
-    def __init__(self, input_shape, gpu, track_dynamics):
+    def __init__(self, input_shape, gpu):
         if gpu:
             if torch.cuda.is_available():
                 device = torch.device("cuda")
@@ -236,34 +223,23 @@ class IBSequential(_Network):
             device = torch.device("cpu")
             print("Running on CPU device !")
         super().__init__(input_shape, device, gpu, track_dynamics)
+        self.evaluator_list = []  # collect all the evaluators
 
-    def attach(self):
+    def attach_evaluator(self, evaluator_obj):
         if self.track_dynamics is True:
-            # TODO
-            return 0
+            self.evaluator_list.append(evaluator_obj)
         else:
-            raise Exception("Cannot attach estimator for track_dyanmics=False")
+            raise Exception("Cannot attach for track_dyanmics=False")
 
-        return 0
+    def evaluate_dynamics(self):
+        evaluators = self.evaluator_list
+        evaluated_dynamics = []
+        # ** NOTE - This can be done in parallel !
+        for evaluator in evaluators:
+            evaluated_dynamics.append(self.dynamics_handler.evaluate(evaluator))
+        return evaluated_dynamics
 
-    def fit(
-        self,
-        x_train,
-        y_train,
-        batch_size,
-        num_epochs,
-        validation_split=0.2,
-        show_plot=True,
-    ):
-        train_loader, val_loader = self.prepare_numpy_data(
-            x_train, y_train, batch_size, validation_split
-        )
-        self.training_loop(num_epochs, train_loader, val_loader, show_plot=show_plot)
-
-    def fit_generator(self, train_loader, val_loader, num_epochs, show_plot=True):
-        self.training_loop(num_epochs, train_loader, val_loader, show_plot)
-
-    def IP_plot(self):
-        x_axis, y_axis = self.ipc.unpack()
-        plt.scatter(x_axis, y_axis)
-        plt.show()
+    def plot_dynamics(self, evaluated_dynamics, plot_show):
+        for idx, flag in enumerate(plot_show):
+            if flag:
+                self.dynamics_handler.plot_dynamics(evaluated_dynamics[idx])
