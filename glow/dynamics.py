@@ -37,6 +37,8 @@ class Dynamics:
         evaluated_segment = evaluator_obj.eval_dynamics_segment(self.dynamics_segment)
         return evaluated_segment
 
+
+"""
     def plot_dynamics(self, evaluated_dynamics):
         x_axis = []
         y_axis = []
@@ -45,6 +47,7 @@ class Dynamics:
                 for segment in batch_collector:
                     x_axis.append(segment[0])
                     y_axis.append(segment[1])
+"""
 
 
 def get(identifier):

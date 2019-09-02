@@ -16,7 +16,7 @@ class HSIC(_Network):
 
     """
 
-    def __init__(self, input_shape, sigma, regularize_coeff, device, gpu=True):
+    def __init__(self, input_shape, sigma, regularize_coeff, device, gpu):
         super().__init__(input_shape, device, gpu)
         self.sigma = sigma
         self.regularize_coeff = regularize_coeff
@@ -102,7 +102,7 @@ class HSICSigma(nn.Module):
 
     """
 
-    def __init__(self, input_shape, sigma_set, regularize_coeff, gpu):
+    def __init__(self, input_shape, sigma_set, regularize_coeff, gpu=True):
         if gpu:
             if torch.cuda.is_available():
                 device = torch.device("cuda")

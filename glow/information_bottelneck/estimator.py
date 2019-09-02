@@ -13,7 +13,7 @@ class _Estimator:
 
     """
 
-    def __init__(self, params, gpu=True):
+    def __init__(self, params, gpu):
         self.params = params  # input parameters for the estimator
         if gpu:
             if torch.cuda.is_available():
@@ -104,7 +104,7 @@ class HSIC(_Estimator):
 
     """
 
-    def __init__(self, sigma, gpu=False):
+    def __init__(self, sigma, gpu=True):
         super().__init__([sigma], gpu)
 
     def criterion(self, x, y):
@@ -129,5 +129,4 @@ class HSIC(_Estimator):
         for idx in range(1, segment_size - 1):
             h = dynamics_segment[idx].view(m, -1)
             output_segment.append([self.criterion(h, x), self.criterion(h, y)])
-
         return output_segment

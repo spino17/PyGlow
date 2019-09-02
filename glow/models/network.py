@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import glow.dynamics as dynamics_module
 import glow.metrics as metric_module
 from tqdm import tqdm
+import numpy as np
 
 
 class _Network(nn.Module):
@@ -109,6 +110,7 @@ class _Network(nn.Module):
         epoch_collector = []
         for epoch in range(num_epochs):
             # training loop
+            print("\n")
             print("Epoch " + str(epoch + 1) + "/" + str(num_epochs))
             train_loss = 0
             print("Training loop: ")
@@ -169,7 +171,7 @@ class _Network(nn.Module):
                 epoch_collector.append(batch_collector)
 
         if self.track_dynamics:
-            self.evaluated_dynamics = dynamics_module.get(epoch_collector)
+            self.evaluated_dynamics = epoch_collector
 
         # plot the loss vs epoch graphs
         if show_plot:
@@ -207,7 +209,7 @@ class Sequential(_Network):
 
     """
 
-    def __init__(self, input_shape, gpu):
+    def __init__(self, input_shape, gpu=True):
         if gpu:
             if torch.cuda.is_available():
                 device = torch.device("cuda")
@@ -229,7 +231,9 @@ class IBSequential(_Network):
 
     """
 
-    def __init__(self, input_shape, gpu, track_dynamics=False):
+    def __init__(
+        self, input_shape, gpu=True, track_dynamics=False, save_dynamics=False
+    ):
         if gpu:
             if torch.cuda.is_available():
                 device = torch.device("cuda")
@@ -258,7 +262,16 @@ class IBSequential(_Network):
         return evaluated_dynamics
     """
 
-    def plot_dynamics(self, evaluated_dynamics, plot_show):
+    def plot_dynamics(self, plot_show):
         for idx, flag in enumerate(plot_show):
             if flag:
-                self.dynamics_handler.plot_dynamics(evaluated_dynamics[idx])
+                x_axis = []
+                y_axis = []
+                for idx, epoch_collector in enumerate(self.evaluated_dynamics):
+                    x_axis.append(idx)
+                    for batch_collector in epoch_collector:
+                        for dynamics_segment in batch_collector:
+                            y_axis.append(dynamics_segment[1])
+                            break
+                plt.scatter(x_axis, y_axis)
+                plt.show()
