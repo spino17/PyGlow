@@ -104,7 +104,7 @@ class HSIC(_Estimator):
 
     """
 
-    def __init__(self, sigma, gpu):
+    def __init__(self, sigma, gpu=False):
         super().__init__([sigma], gpu)
 
     def criterion(self, x, y):
@@ -122,10 +122,12 @@ class HSIC(_Estimator):
     def eval_dynamics_segment(self, dynamics_segment):
         segment_size = len(dynamics_segment)
         x = dynamics_segment[0]
-        y = dynamics_segment[segment_size - 1]
+        m = x.shape[0]
+        x = x.view(m, -1)
+        y = dynamics_segment[segment_size - 1].view(m, -1)
         output_segment = []
         for idx in range(1, segment_size - 1):
-            h = dynamics_segment[idx]
+            h = dynamics_segment[idx].view(m, -1)
             output_segment.append([self.criterion(h, x), self.criterion(h, y)])
 
         return output_segment

@@ -4,7 +4,6 @@ import glow.losses as losses_module
 from glow.utils import Optimizers as O
 from glow.preprocessing import DataGenerator
 import glow.tensor_numpy_adapter as tensor_numpy_adapter
-from glow.preprocessing import DataGenerator
 import matplotlib.pyplot as plt
 import glow.dynamics as dynamics_module
 import glow.metrics as metric_module
@@ -87,6 +86,20 @@ class _Network(nn.Module):
         plt.plot(epochs, val_losses, color="blue", label="validation loss")
         plt.show()
 
+    def attach_evaluator(self, evaluator_obj):
+        if self.track_dynamics is True:
+            self.evaluator_list.append(evaluator_obj)
+        else:
+            raise Exception("Cannot attach for track_dyanmics=False")
+
+    def evaluate_dynamics(self):
+        evaluators = self.evaluator_list
+        evaluated_dynamics = []
+        # ** NOTE - This can be done in parallel !
+        for evaluator in evaluators:
+            evaluated_dynamics.append(self.dynamics_handler.evaluate(evaluator))
+        return evaluated_dynamics
+
     def training_loop(self, num_epochs, train_loader, val_loader, show_plot=True):
         self.to(self.device)
         train_losses, val_losses, epochs = [], [], []
@@ -104,9 +117,14 @@ class _Network(nn.Module):
             for x, y in train_loader:
                 x, y = x.to(self.device), y.to(self.device)
                 self.optimizer.zero_grad()
-                y_pred, hidden_outputs = self.forward(x)
-                if self.track_dynamics:
-                    batch_collector.append([x, *hidden_outputs, y])
+                y_pred, dynamics_segment = self.forward(x)
+                dynamics_segment = [x] + dynamics_segment
+                if self.track_dynamics and len(self.evaluator_list) > 0:
+                    self.dynamics_handler = dynamics_module.get(dynamics_segment)
+                    # batch_collector.append([x, *hidden_outputs, y])
+                    evaluated_dynamics_segment = self.evaluate_dynamics()
+                    batch_collector.append(evaluated_dynamics_segment)
+
                 loss = self.criterion(y_pred, y)
                 loss.backward()
                 self.optimizer.step()
@@ -131,7 +149,7 @@ class _Network(nn.Module):
                     pbar = tqdm(total=val_len)
                     for x, y in val_loader:
                         x, y = x.to(self.device), y.to(self.device)
-                        y_pred = self.forward(x)
+                        y_pred, _ = self.forward(x)
                         val_loss += self.criterion(y_pred, y).item()
                         pbar.update(1)
                     pbar.close()
@@ -151,8 +169,7 @@ class _Network(nn.Module):
                 epoch_collector.append(batch_collector)
 
         if self.track_dynamics:
-            # self.dynamics_collector = epoch_collector
-            self.dynamics_handler = dynamics_module.get(epoch_collector)
+            self.evaluated_dynamics = dynamics_module.get(epoch_collector)
 
         # plot the loss vs epoch graphs
         if show_plot:
@@ -212,7 +229,7 @@ class IBSequential(_Network):
 
     """
 
-    def __init__(self, input_shape, device, gpu, track_dynamics=False):
+    def __init__(self, input_shape, gpu, track_dynamics=False):
         if gpu:
             if torch.cuda.is_available():
                 device = torch.device("cuda")
@@ -225,6 +242,7 @@ class IBSequential(_Network):
         super().__init__(input_shape, device, gpu, track_dynamics)
         self.evaluator_list = []  # collect all the evaluators
 
+    """
     def attach_evaluator(self, evaluator_obj):
         if self.track_dynamics is True:
             self.evaluator_list.append(evaluator_obj)
@@ -238,6 +256,7 @@ class IBSequential(_Network):
         for evaluator in evaluators:
             evaluated_dynamics.append(self.dynamics_handler.evaluate(evaluator))
         return evaluated_dynamics
+    """
 
     def plot_dynamics(self, evaluated_dynamics, plot_show):
         for idx, flag in enumerate(plot_show):

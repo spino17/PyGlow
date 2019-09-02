@@ -1,5 +1,5 @@
 from torch import nn
-from glow.Information_bottelneck import HSIC
+from glow.information_bottelneck import HSIC
 from torch.nn.functional import one_hot
 
 
