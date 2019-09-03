@@ -64,7 +64,10 @@ class _Network(nn.Module):
         learning_rate=0.001,
         momentum=0.95,
     ):
-        self.criterion = losses_module.get(loss)
+        if callable(loss):
+            self.criterion = loss
+        elif isinstance(loss, str):
+            self.criterion = losses_module.get(loss)
         self.optimizer = O.optimizer(
             self.parameters(), learning_rate, momentum, optimizer
         )

@@ -54,8 +54,10 @@ class HSIC(_Network):
     def compile(
         self, optimizer="SGD", loss="HSIC_loss", learning_rate=0.001, momentum=0.95
     ):
-        # raise exception
-        self.criterion = losses_module.get(loss)
+        if callable(loss):
+            self.criterion = loss
+        elif isinstance(loss, str):
+            self.criterion = losses_module.get(loss)
         self.layer_optimizers = self.make_layer_optimizers(
             optimizer, learning_rate, momentum
         )
@@ -93,6 +95,20 @@ class HSIC(_Network):
         for layer_idx, layer in enumerate(self.layer_list):
             for params in layer.parameters():
                 params.requires_grad = False
+
+
+class HSICSequential(nn.Module):
+    def __init__(self, input_shape, sigma, regularize_coeff, gpu=True):
+        if gpu:
+            if torch.cuda.is_available():
+                device = torch.device("cuda")
+                print("Running on CUDA enabled device !")
+            else:
+                raise Exception("No CUDA enabled GPU device found")
+        else:
+            device = torch.device("cpu")
+            print("Running on CPU device !")
+        super().__init__(self, input_shape, sigma, regularize_coeff, device, gpu)
 
 
 class HSICSigma(nn.Module):
@@ -141,7 +157,11 @@ class HSICSigma(nn.Module):
         # ** NOTE - This can be done in parallel !
         for model_idx, model in enumerate(self.model_list):
             if model_idx == self.num_models:
-                self.output_criterion = losses_module.get(model[0].loss)
+                # self.output_criterion = losses_module.get(model[0].loss)
+                if callable(model[0].loss):
+                    self.output_criterion = model[0].loss
+                elif isinstance(model[0].loss, str):
+                    self.output_criterion = losses_module.get(model[0].loss)
                 self.output_optimizer = O.optimizer(
                     model.parameters(), model[0].learning_rate, momentum, optimizer
                 )
