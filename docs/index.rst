@@ -26,21 +26,25 @@ PyGlow package is an attempt to implement Keras like API functionalities on PyTo
 
 Look how easy it is to use:
 
-    import PyGlow
+    import glow
     # Get your stuff done
 
 Features
 --------
 
-- Easy to implement.
-- With the power of an engine written in PyTorch. 
+- Track the dynamics of the training process.
+- Estimate information theoretic measures that explains generalization and compression.
+- Attach your custom evaluators for intermediate layers to train neural networks.
+- State-of-the-art mutual information (other criterion) estimators to give accurate bounds.
+- Easy to implement and experiment with information theoretic methods in deep learning.
+- Ease of Keras with Backend engine on PyTorch. 
 
 Installation
 ------------
 
 Install PyGlow by running:
 
-    install PyGlow
+    pip install -i https://test.pypi.org/simple/ PyGlow
 
 Contribute
 ----------
@@ -52,7 +56,7 @@ Support
 -------
 
 If you are having issues, please let us know.
-E-mail us at: b16016@students.iitmandi.ac.in
+E-mail us at: bhavyabhatt17@gmail.com
 
 License
 -------

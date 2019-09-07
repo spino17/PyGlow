@@ -22,4 +22,4 @@ from . import losses
 from . import activations
 from . import hash_functions
 
-__version__ = "0.0.6"
+__version__ = "0.0.7"

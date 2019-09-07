@@ -248,33 +248,3 @@ class IBSequential(_Network):
             print("Running on CPU device !")
         super().__init__(input_shape, device, gpu, track_dynamics)
         self.evaluator_list = []  # collect all the evaluators
-
-    """
-    def attach_evaluator(self, evaluator_obj):
-        if self.track_dynamics is True:
-            self.evaluator_list.append(evaluator_obj)
-        else:
-            raise Exception("Cannot attach for track_dyanmics=False")
-
-    def evaluate_dynamics(self):
-        evaluators = self.evaluator_list
-        evaluated_dynamics = []
-        # ** NOTE - This can be done in parallel !
-        for evaluator in evaluators:
-            evaluated_dynamics.append(self.dynamics_handler.evaluate(evaluator))
-        return evaluated_dynamics
-    """
-
-    def plot_dynamics(self, plot_show):
-        for idx, flag in enumerate(plot_show):
-            if flag:
-                x_axis = []
-                y_axis = []
-                for idx, epoch_collector in enumerate(self.evaluated_dynamics):
-                    x_axis.append(idx)
-                    for batch_collector in epoch_collector:
-                        for dynamics_segment in batch_collector:
-                            y_axis.append(dynamics_segment[1])
-                            break
-                plt.scatter(x_axis, y_axis)
-                plt.show()

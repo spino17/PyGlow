@@ -20,6 +20,22 @@ class HSIC(_Network):
         super().__init__(input_shape, device, gpu)
         self.sigma = sigma
         self.regularize_coeff = regularize_coeff
+        self.loss_dict = {}  # stores the losses of the individual layers
+
+    def add(self, layer_obj, **kwargs):
+        if self.num_layers == 0:
+            prev_input_shape = self.input_shape
+        else:
+            prev_input_shape = self.layer_list[self.num_layers - 1][-1].output_shape
+        layer_obj.set_input(prev_input_shape)
+        self.layer_list.append(self._make_layer_unit(layer_obj))
+        self.num_layers = self.num_layers + 1
+        if "loss" in kwargs.keys():
+            if callable(kwargs["loss"]):
+                loss = kwargs["loss"]
+            else:
+                loss = losses_module.get(kwargs["loss"])
+            self.loss_dict[self.num_layers - 1].append(loss)
 
     def forward(self, x):
         layers = self.layer_list

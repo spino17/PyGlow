@@ -2,7 +2,11 @@ import torch
 from torch import nn
 
 
-def gaussian_kernel(x, y, sigma):
+def gaussian_kernel(x, y, params_dict):
+    if "sigma" in params_dict.keys():
+        sigma = params_dict["sigma"]
+    else:
+        raise Exception("Cannot find argument sigma for the gaussian kernel")
     m = x.shape[0]
     vec_dim = x.shape[1]
     x = x.view(m, 1, vec_dim)
@@ -14,3 +18,5 @@ def gaussian_kernel(x, y, sigma):
 def get(kernel):
     if kernel == "gaussian":
         return gaussian_kernel
+    else:
+        raise ValueError("Could not interpret " "kernel function identifier:", identifier)

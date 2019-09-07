@@ -13,8 +13,8 @@ class _Estimator:
 
     """
 
-    def __init__(self, params, gpu):
-        self.params = params  # input parameters for the estimator
+    def __init__(self, params_dict, gpu):
+        self.params_dict = params_dict  # input parameters for the estimator
         if gpu:
             if torch.cuda.is_available():
                 self.device = torch.device("cuda")
@@ -29,7 +29,16 @@ class _Estimator:
 
     # logic to process the smallest segment of the dynamics
     def eval_dynamics_segment(self, dynamics_segment):
-        pass
+        segment_size = len(dynamics_segment)
+        x = dynamics_segment[0]
+        m = x.shape[0]
+        x = x.view(m, -1)
+        y = dynamics_segment[segment_size - 1].view(m, -1)
+        output_segment = []
+        for idx in range(1, segment_size - 1):
+            h = dynamics_segment[idx].view(m, -1)
+            output_segment.append([self.criterion(h, x), self.criterion(h, y)])
+        return output_segment
 
 
 """
@@ -62,9 +71,8 @@ class EDGE(_Estimator):
 
     """
 
-    def __init__(self, hash_function, epsilon, alpha, gpu):
-        b = random.uniform(0, epsilon)
-        super().__init__([epsilon, b, alpha])
+    def __init__(self, hash_function, gpu=True, **kwargs):
+        super().__init__([kwargs])
         self.hash_function = hash_function
 
     def g(self, x):
@@ -72,7 +80,7 @@ class EDGE(_Estimator):
 
     # mutual information
     def criterion(self, x, y):
-        h = hash_module.get(self.hash_function)
+        h = hash_module.get(self.hash_function, self.params_dict)
         num_sample = x.shape[0]
         F = self.params[3] * num_sample
         N = torch.zeros(F, 1)
@@ -104,29 +112,18 @@ class HSIC(_Estimator):
 
     """
 
-    def __init__(self, sigma, gpu=True):
-        super().__init__([sigma], gpu)
+    def __init__(self, kernel, gpu=True, **kwargs):
+        super().__init__([kwargs], gpu)
+        self.kernel = kernel
 
+    # Hilbert-Schmid Independence Criterion
     def criterion(self, x, y):
         x, y = x.to(self.device), y.to(self.device)
-        sigma = self.params[0]
         m = x.shape[0]
-        K_x = kernel_module.get("gaussian")(x, x, sigma)
-        K_y = kernel_module.get("gaussian")(y, y, sigma)
+        K_x = kernel_module.get(self.kernel)(x, x, self.params_dict)
+        K_y = kernel_module.get(self.kernel)(y, y, self.params_dict)
         H = torch.eye(m, m) - (1 / m) * torch.ones(m, m)
         H = H.to(self.device)
         matrix_x = torch.mm(K_x, H)
         matrix_y = torch.mm(K_y, H)
         return (1 / (m - 1)) * torch.trace(torch.mm(matrix_x, matrix_y))
-
-    def eval_dynamics_segment(self, dynamics_segment):
-        segment_size = len(dynamics_segment)
-        x = dynamics_segment[0]
-        m = x.shape[0]
-        x = x.view(m, -1)
-        y = dynamics_segment[segment_size - 1].view(m, -1)
-        output_segment = []
-        for idx in range(1, segment_size - 1):
-            h = dynamics_segment[idx].view(m, -1)
-            output_segment.append([self.criterion(h, x), self.criterion(h, y)])
-        return output_segment

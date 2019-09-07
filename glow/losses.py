@@ -26,3 +26,5 @@ def get(identifier):
         return NLLLoss
     elif identifier == "HSIC_loss":
         return HSICLoss
+    else:
+        raise ValueError("Could not interpret " "loss function identifier:", identifier)

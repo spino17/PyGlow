@@ -32,3 +32,5 @@ def get(identifier):
         return softmax
     elif identifier == "log_softmax":
         return log_softmax
+    else:
+        raise ValueError("Could not interpret " "activation identifier:", identifier)

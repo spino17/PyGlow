@@ -12,3 +12,5 @@ def categorical_accuracy(y_true, y_pred):
 def get(identifier):
     if identifier == "accuracy":
         return categorical_accuracy
+    else:
+        raise ValueError("Could not interpret " "metric identifier:", identifier)
