@@ -16,13 +16,12 @@ class HSIC(_Network):
 
     """
 
-    def __init__(self, input_shape, sigma, regularize_coeff, device, gpu):
+    def __init__(self, input_shape, device, gpu, **kwargs):
         super().__init__(input_shape, device, gpu)
-        self.sigma = sigma
-        self.regularize_coeff = regularize_coeff
+        self.params_dict = kwargs
         self.loss_dict = {}  # stores the losses of the individual layers
 
-    def add(self, layer_obj, **kwargs):
+    def add(self, layer_obj, loss=None, **kwargs):
         if self.num_layers == 0:
             prev_input_shape = self.input_shape
         else:
@@ -30,12 +29,10 @@ class HSIC(_Network):
         layer_obj.set_input(prev_input_shape)
         self.layer_list.append(self._make_layer_unit(layer_obj))
         self.num_layers = self.num_layers + 1
-        if "loss" in kwargs.keys():
-            if callable(kwargs["loss"]):
-                loss = kwargs["loss"]
-            else:
-                loss = losses_module.get(kwargs["loss"])
-            self.loss_dict[self.num_layers - 1].append(loss)
+        if loss is not None:
+            if not callable(loss):
+                loss = losses_module.get(loss, **kwargs)
+            self.loss_dict[self.num_layers - 1] = loss
 
     def forward(self, x):
         layers = self.layer_list
@@ -68,12 +65,17 @@ class HSIC(_Network):
         return optimizer_list
 
     def compile(
-        self, optimizer="SGD", loss="HSIC_loss", learning_rate=0.001, momentum=0.95
+        self,
+        optimizer="SGD",
+        loss="HSIC_loss",
+        learning_rate=0.001,
+        momentum=0.95,
+        **kwargs
     ):
         if callable(loss):
             self.criterion = loss
         elif isinstance(loss, str):
-            self.criterion = losses_module.get(loss)
+            self.criterion = losses_module.get(loss, **kwargs)
         self.layer_optimizers = self.make_layer_optimizers(
             optimizer, learning_rate, momentum
         )
@@ -94,14 +96,11 @@ class HSIC(_Network):
                 for idx, z in enumerate(hidden_outputs):
                     if self.layer_optimizers[idx] is not None:
                         self.layer_optimizers[idx].zero_grad()
-                        loss = self.criterion(
-                            z,
-                            x.view(x.shape[0], -1),
-                            y,
-                            self.sigma,
-                            self.regularize_coeff,
-                            self.is_gpu,
-                        )
+                        if idx in self.loss_dict.keys():
+                            criterion = self.loss_dict[idx]
+                        else:
+                            criterion = self.criterion
+                        loss = criterion(z, x.view(x.shape[0], -1), y, self.is_gpu)
                         loss.backward()
                         self.layer_optimizers[idx].step()
                 pbar.update(1)
@@ -155,7 +154,7 @@ class HSICSigma(nn.Module):
             )
         self.device = device
 
-    def add(self, layer_obj):
+    def add(self, layer_obj, loss=None, **kwargs):
         # ** NOTE - This can be done in parallel !
         if isinstance(layer_obj, HSICoutput):
             prev_input_shape = self.model_list[0].layer_list[-1][-1].output_shape
@@ -167,9 +166,9 @@ class HSICSigma(nn.Module):
                     init_layer_obj = layer_obj.__class__()
                 else:
                     init_layer_obj = layer_obj.__class__(*layer_obj.args)
-                model.add(init_layer_obj)
+                model.add(init_layer_obj, loss, **kwargs)
 
-    def compile(self, optimizer, loss, metrics, learning_rate=0.001, momentum=0.95):
+    def compile(self, optimizer, loss, metrics, learning_rate=0.001, momentum=0.95, **kwargs):
         # ** NOTE - This can be done in parallel !
         for model_idx, model in enumerate(self.model_list):
             if model_idx == self.num_models:

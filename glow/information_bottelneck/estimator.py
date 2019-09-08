@@ -72,7 +72,7 @@ class EDGE(_Estimator):
     """
 
     def __init__(self, hash_function, gpu=True, **kwargs):
-        super().__init__([kwargs])
+        super().__init__(kwargs)
         self.hash_function = hash_function
 
     def g(self, x):
@@ -113,7 +113,7 @@ class HSIC(_Estimator):
     """
 
     def __init__(self, kernel, gpu=True, **kwargs):
-        super().__init__([kwargs], gpu)
+        super().__init__(kwargs, gpu)
         self.kernel = kernel
 
     # Hilbert-Schmid Independence Criterion

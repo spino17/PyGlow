@@ -25,4 +25,3 @@ def get(identifier, params_dict):
         return curry_func
     else:
         raise ValueError("Could not interpret " "hash function identifier:", identifier)
-

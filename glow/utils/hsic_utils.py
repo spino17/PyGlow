@@ -19,4 +19,6 @@ def get(kernel):
     if kernel == "gaussian":
         return gaussian_kernel
     else:
-        raise ValueError("Could not interpret " "kernel function identifier:", identifier)
+        raise ValueError(
+            "Could not interpret " "kernel function identifier:", identifier
+        )
