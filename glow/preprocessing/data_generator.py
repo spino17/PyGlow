@@ -6,7 +6,7 @@ from torch.nn.functional import one_hot
 
 class DataGenerator(Dataset):
     """
-    class for implementing data batch generators
+    class for implementing data generators and loaders.
 
     """
 
@@ -15,6 +15,24 @@ class DataGenerator(Dataset):
         self.adapter_obj = tensor_numpy_adapter.get()
 
     def set_dataset(self, X, y, batch_size, validation_split=0.2):
+        """
+        Converts raw dataset into processed batched dataset loaders
+        for training and validation.
+
+        Arguments:
+            X (torch.Tensor): input dataset
+            y (torch.Tensor): labels
+            batch_size (int): batch size of a single batch
+            validation_split (float): proportion of the total dataset which
+            is used for validation
+
+        Returns:
+            train_dataset (torch.utils.data.DataLoader): contains training data-
+            loader with processed batches
+            validation_dataset (torch.utils.data.DataLoader): contains validation
+            data-loader with processed batches
+
+        """
         y = y.long().view(-1)
         self.dataset = TensorDataset(X, y)
         self.batch_size = batch_size
@@ -30,6 +48,23 @@ class DataGenerator(Dataset):
         return DataLoader(validation_dataset, batch_size)
 
     def prepare_numpy_data(self, x_train, y_train, batch_size, validation_split):
+        """
+        Converts numpy type dataset into PyTorch data-loader type dataset.
+
+        Arguments:
+            x_train (numpy.ndarray): training input dataset
+            y_train (numpy.ndarray): training ground-truth labels
+            batch_size (int): batch size of a single batch
+            validation_split (float): proportion of the total dataset which
+            is used for validation
+
+        Returns:
+            train_loader (torch.utils.data.DataLoader): contains training data-
+            loader with processed batches
+            val_loader (torch.utils.data.DataLoader): contains validation
+            data-loader with processed batches
+
+        """
         x_train, y_train = (
             self.adapter_obj.to_tensor(x_train),
             self.adapter_obj.to_tensor(y_train),

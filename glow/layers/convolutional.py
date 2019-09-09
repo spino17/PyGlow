@@ -5,7 +5,18 @@ import math
 
 class _Conv(nn.Module):
     """
-    Base abstract class for convolution layers of all rank.
+    Base abstract class for convolution layers of all rank (1 - 3).
+
+    Arguments:
+        rank (int): rank for the convolutional operation
+        filters (int): number of filters for the layer
+        kernel_size (tuple or int): size of kernel to be used for convolutional
+        operation
+        stride (tuple or int): stride for the kernel in convolutional operations
+        padding (tuple or int): padding for the image to handle edges while
+        convoluting
+        dilation (tuple or int): dilation for the convolutiona operation
+        activation (str): activation function to be used for the layer (default: None)
 
     """
 

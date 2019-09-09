@@ -11,6 +11,11 @@ class Estimator:
     criterion in information theory like mutual information etc. These methods
     are further used in analysing training dyanmics of different architechures.
 
+    Arguments:
+        gpu (bool): if true then all the computation is carried on `GPU` else
+        on `CPU`
+        **kwargs: the keyword that stores parameters for the estimators
+
     """
 
     def __init__(self, gpu, **kwargs):
@@ -23,12 +28,32 @@ class Estimator:
         else:
             self.device = torch.device("cpu")
 
-    # returns mutual information between x and y random variable
     def criterion(self, x, y):
+        """
+        Defines the criterion of the estimator for example EDGE algorithm have
+        mutual information as its criterion. Generally criterion is some kind
+        of dependence or independence measure between `x` and `y`. In the context
+        of information theory most widely used criterion is mutual information
+        between the two arguments.
+
+        Arguments:
+            x (torch.Tensor): first random variable
+            y (torch.Tensor): second random variable
+
+        """
         pass
 
-    # logic to process the smallest segment of the dynamics
     def eval_dynamics_segment(self, dynamics_segment):
+        """
+        Process smallest segment of dynamics and calculate coordinates using the
+        defined criterion.
+
+        Arguments:
+            dynamics_segment (iterable): smallest segment of the dynamics of a batch
+        containing input, hidden layer output and label in form of
+        :class:`torch.Tensor` objects
+
+        """
         segment_size = len(dynamics_segment)
         x = dynamics_segment[0]
         m = x.shape[0]
@@ -68,6 +93,15 @@ class EDGE(Estimator):
     """
     Mutual information technique propsed in the paper
     'SCALABLE MUTUAL INFORMATION ESTIMATION USING DEPENDENCE GRAPHS'
+
+    Arguments:
+        hash_function (callable or str):
+            Hash function which is used to obtain mapping from data to dependency
+            graph nodes as described in EDGE algorithm
+        gpu (bool, optional): if true then all the computation is carried on `GPU`
+        else on `CPU`
+        **kwargs: the keyword that stores parameters for EDGE algorithm mutual
+        information criterion
 
     """
 
@@ -109,6 +143,13 @@ class HSIC(Estimator):
     """
     Class for estimating Hilbert-Schmidt Independence Criterion as done in
     paper "The HSIC Bottleneck: Deep Learning without Back-Propotion"
+
+    Arguments:
+        kernel (str): kernel which is used for calculating K matrix in HSIC
+        criterion
+        gpu (bool): if true then all the computation is carried on `GPU`
+        else on `CPU`
+        **kwargs: the keyword that stores parameters for HSIC criterion
 
     """
 

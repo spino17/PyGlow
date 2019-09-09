@@ -3,8 +3,8 @@ import torch
 
 class TensorNumpyAdapter:
     """
-    class for adapter interface between numpy array
-    type and Tensor objects in PyTorch
+    Class for adapter interface between numpy array
+    type and Tensor objects in PyTorch.
 
     """
 

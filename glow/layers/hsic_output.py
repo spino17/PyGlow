@@ -5,7 +5,9 @@ from glow.layers.core import Dense
 
 class HSICoutput(Dense):
     """
-    Class for HSIC sigma network output layer.
+    Class for HSIC sigma network output layer. This class extends functionalities
+    of :class:`glow.layers.Dense` with more robust features to serve for
+    HSIC sigma network purposes.
 
     """
 

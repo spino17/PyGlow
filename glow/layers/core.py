@@ -6,6 +6,10 @@ class Dense(nn.Module):
     """
     Class for full connected dense layer.
 
+    Arguments:
+        output_dim (int): output dimension of the dense layer
+        activation (str): activation function to be used for the layer (default: None)
+
     """
 
     def __init__(self, output_dim, activation=None):
@@ -29,6 +33,10 @@ class Dropout(nn.Module):
     """
      Class for dropout layer - regularization using noise stablity of output.
 
+     Arguments:
+         prob (float): probability with which neurons in the previous layer is
+         dropped
+
     """
 
     def __init__(self, prob):
@@ -47,7 +55,7 @@ class Dropout(nn.Module):
 
 class Flatten(nn.Module):
     """
-    Class for flattening the input shape
+    Class for flattening the input shape.
 
     """
 
