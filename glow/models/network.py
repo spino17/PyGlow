@@ -13,8 +13,19 @@ import numpy as np
 
 class _Network(nn.Module):
     """
-    Base class for Sequential models implementation on
-    PyTorch.
+    Base class for Sequential model implementation.
+
+    Arguments:
+        input_shape (tuple): input tensor shape
+        device (torch.device or int): `GPU` or `CPU` for training purposes
+        gpu (bool): true if `GPU` is enabled on the system, false otherwise
+        track_dynamics (bool): tracks the NN dynamics during training
+        (stores input-output for every intermediate layer)
+
+    Attributes:
+        layer_list (iterable): an iterable of pytorch
+        :class:`torch.nn.modules.container.Sequential` type layers
+        num_layers (int): number of layers in the model
 
     """
 
@@ -28,6 +39,14 @@ class _Network(nn.Module):
         self.track_dynamics = track_dynamics
 
     def add(self, layer_obj):
+        """
+        Adds specified (by the `layer_obj` argument) layer to the model. It
+        automatically handles the input shape from the previous layer.
+
+        Arguments:
+            layer_obj (glow.Layer): object of specific layer to be added
+
+        """
         if self.num_layers == 0:
             prev_input_shape = self.input_shape
         else:
@@ -63,11 +82,26 @@ class _Network(nn.Module):
         metrics=[],
         learning_rate=0.001,
         momentum=0.95,
+        **kwargs
     ):
+        """
+        Compile the model with attaching optimizer and loss function to the
+        model.
+
+        Arguments:
+            optimizer (torch.optim.Optimizer): optimizer to be used during training
+            process
+            loss (loss): loss function for back-propagation
+            metrics (list): list of all performance metric which needs to be
+            evaluated in validation pass
+            learning_rate (float, optional): learning rate for gradient descent step (default: 0.001)
+            momentum (float, optional): momentum for different variants of optimizers (default: 0.95)
+
+        """
         if callable(loss):
             self.criterion = loss
         elif isinstance(loss, str):
-            self.criterion = losses_module.get(loss)
+            self.criterion = losses_module.get(loss, **kwargs)
         self.optimizer = O.optimizer(
             self.parameters(), learning_rate, momentum, optimizer
         )
@@ -91,10 +125,23 @@ class _Network(nn.Module):
         plt.show()
 
     def attach_evaluator(self, evaluator_obj):
+        """
+        Attaches an evaluator with the model which will get evaluated at every
+        pass of batch and obtain information plane coordinates according to
+        defined criterion in the 'evaluator_obj'. It appends the 'evaluator_obj'
+        to the list 'evaluator_list' which consists all the attached evaluators
+        with the model.
+
+        Arguments:
+            evaluator_obj (glow.information_bottleneck.Estimator): evaluator
+            object with has criterion defined which will get evaluated for the
+            dynamics of the training process
+
+        """
         if self.track_dynamics is True:
             self.evaluator_list.append(evaluator_obj)
         else:
-            raise Exception("Cannot attach for track_dyanmics=False")
+            raise Exception("Cannot attach for track_dynamics=False")
 
     def evaluate_dynamics(self):
         evaluators = self.evaluator_list
@@ -105,6 +152,19 @@ class _Network(nn.Module):
         return evaluated_dynamics
 
     def training_loop(self, num_epochs, train_loader, val_loader, show_plot=True):
+        """
+        Training loop for training and validation.
+
+        Arguments:
+            num_epochs (int): number of epochs for training
+            train_loader (torch.utils.data.DataLoader): training dataset
+            (with already processed batches)
+            val_loader (torch.utils.data.DataLoader): validation dataset
+            (with already processed batches)
+            show_plot (bool, optional): if true plots the training loss (red),
+            validation loss (blue) vs epochs (default: True)
+
+        """
         self.to(self.device)
         train_losses, val_losses, epochs = [], [], []
         train_len = len(train_loader)
@@ -189,6 +249,20 @@ class _Network(nn.Module):
         validation_split=0.2,
         show_plot=True,
     ):
+        """
+        Fits the dataset passed as numpy array (Keras like pipeline) in the arguments.
+
+        Arguments:
+            x_train (numpy.ndarray): training input dataset
+            y_train (numpy.ndarray): training ground-truth labels
+            batch_size (int): batch size of one batch
+            num_epochs (int): number of epochs for training
+            validation_split (float, optional): proportion of the total dataset
+            to be used for validation (default: 0.2)
+            show_plot (bool, optional): if true plots the training loss (red),
+            validation loss (blue) vs epochs (default: True)
+
+        """
         data_obj = DataGenerator()
         train_loader, val_loader = data_obj.prepare_numpy_data(
             x_train, y_train, batch_size, validation_split
@@ -196,6 +270,10 @@ class _Network(nn.Module):
         self.training_loop(num_epochs, train_loader, val_loader, show_plot=show_plot)
 
     def fit_generator(self, train_loader, val_loader, num_epochs, show_plot=True):
+        """
+        Fits the dataset by taking 'data_loader' as arguments.
+
+        """
         self.training_loop(num_epochs, train_loader, val_loader, show_plot)
 
     def predict(self, x):
@@ -229,8 +307,13 @@ class Sequential(_Network):
 
 class IBSequential(_Network):
     """
-    Class that attaches Information Bottleneck functionalities
-    with the model to analyses the dynamics of training.
+    Class that extends standard Sequential functionalities with more
+    sophisticated Information Bottleneck functionalities for analysing the
+    dynamics of training.
+
+    Arguments:
+        save_dynamics (bool, optional): if true then saves the whole training
+        process dynamics into a distributed file (for efficiency)
 
     """
 

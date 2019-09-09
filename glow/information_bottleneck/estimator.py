@@ -5,7 +5,7 @@ import torch
 import glow.utils.hsic_utils as kernel_module
 
 
-class _Estimator:
+class Estimator:
     """
     Class for implementing functionalities to estimate different dependence
     criterion in information theory like mutual information etc. These methods
@@ -13,8 +13,8 @@ class _Estimator:
 
     """
 
-    def __init__(self, params_dict, gpu):
-        self.params_dict = params_dict  # input parameters for the estimator
+    def __init__(self, gpu, **kwargs):
+        self.params_dict = kwargs  # input parameters for the estimator
         if gpu:
             if torch.cuda.is_available():
                 self.device = torch.device("cuda")
@@ -64,7 +64,7 @@ class MINE(_Estimator):
 """
 
 
-class EDGE(_Estimator):
+class EDGE(Estimator):
     """
     Mutual information technique propsed in the paper
     'SCALABLE MUTUAL INFORMATION ESTIMATION USING DEPENDENCE GRAPHS'
@@ -72,7 +72,7 @@ class EDGE(_Estimator):
     """
 
     def __init__(self, hash_function, gpu=True, **kwargs):
-        super().__init__(kwargs)
+        super().__init__(gpu, **kwargs)
         self.hash_function = hash_function
 
     def g(self, x):
@@ -105,7 +105,7 @@ class EDGE(_Estimator):
         return mut_info
 
 
-class HSIC(_Estimator):
+class HSIC(Estimator):
     """
     Class for estimating Hilbert-Schmidt Independence Criterion as done in
     paper "The HSIC Bottleneck: Deep Learning without Back-Propotion"
@@ -113,7 +113,7 @@ class HSIC(_Estimator):
     """
 
     def __init__(self, kernel, gpu=True, **kwargs):
-        super().__init__(kwargs, gpu)
+        super().__init__(gpu, **kwargs)
         self.kernel = kernel
 
     # Hilbert-Schmid Independence Criterion

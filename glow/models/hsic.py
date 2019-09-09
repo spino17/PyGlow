@@ -113,7 +113,7 @@ class HSIC(_Network):
 
 
 class HSICSequential(nn.Module):
-    def __init__(self, input_shape, sigma, regularize_coeff, gpu=True):
+    def __init__(self, input_shape, gpu=True, **kwargs):
         if gpu:
             if torch.cuda.is_available():
                 device = torch.device("cuda")
@@ -123,7 +123,7 @@ class HSICSequential(nn.Module):
         else:
             device = torch.device("cpu")
             print("Running on CPU device !")
-        super().__init__(self, input_shape, sigma, regularize_coeff, device, gpu)
+        super().__init__(self, input_shape, device, gpu, **kwargs)
 
 
 class HSICSigma(nn.Module):
@@ -133,7 +133,7 @@ class HSICSigma(nn.Module):
 
     """
 
-    def __init__(self, input_shape, sigma_set, regularize_coeff, gpu=True):
+    def __init__(self, input_shape, gpu=True, **kwargs):
         if gpu:
             if torch.cuda.is_available():
                 device = torch.device("cuda")
@@ -149,10 +149,9 @@ class HSICSigma(nn.Module):
         # ** NOTE - This can be done in parallel !
         for sigma in sigma_set:
             self.num_models += 1
-            self.model_list.append(
-                HSIC(input_shape, sigma, regularize_coeff, device, gpu)
-            )
+            self.model_list.append(HSIC(input_shape, device, gpu))
         self.device = device
+        self.num_layers = 0  # number of layers including output layer
 
     def add(self, layer_obj, loss=None, **kwargs):
         # ** NOTE - This can be done in parallel !
@@ -160,6 +159,11 @@ class HSICSigma(nn.Module):
             prev_input_shape = self.model_list[0].layer_list[-1][-1].output_shape
             layer_obj.set_input(prev_input_shape)
             self.model_list.append(nn.Sequential(layer_obj))
+            self.output_criterion = None
+            if loss is not None:
+                if not callable(loss):
+                    loss = losses_module.get(loss, **kwargs)
+                self.output_criterion = loss
         else:
             for model in self.model_list:
                 if len(layer_obj.args) == 0:
@@ -167,22 +171,53 @@ class HSICSigma(nn.Module):
                 else:
                     init_layer_obj = layer_obj.__class__(*layer_obj.args)
                 model.add(init_layer_obj, loss, **kwargs)
+        self.num_layers += 1
 
-    def compile(self, optimizer, loss, metrics, learning_rate=0.001, momentum=0.95, **kwargs):
+    def compile_ensemble(
+        self, optimizer, ensemble_loss, learning_rate, momentum, **kwargs
+    ):
+        # ** NOTE - This can be done in parallel !
+        for model_idx, model in enumerate(self.model_list):
+            if model_idx != self.num_models:
+                model.compile(
+                    optimizer, ensemble_loss, learning_rate, momentum, **kwargs
+                )
+
+    def compile_output(
+        self, optimizer, output_loss, learning_rate, momentum, metrics, **kwargs
+    ):
+        model = self.model_list[self.num_models]
+        if not callable(output_loss):
+            output_loss = losses_module.get(output_loss, **kwargs)
+        if self.output_criterion is None:
+            self.output_criterion = output_loss
+        self.output_optimizer = O.optimizer(
+            model.parameters(), learning_rate, momentum, optimizer
+        )
+        self.metrics = metrics
+
+    """
+    def compile(
+        self,
+        optimizer,
+        ensemble_loss,
+        output_loss,
+        metrics,
+        learning_rate=0.001,
+        momentum=0.95,
+        **kwargs
+    ):
         # ** NOTE - This can be done in parallel !
         for model_idx, model in enumerate(self.model_list):
             if model_idx == self.num_models:
-                # self.output_criterion = losses_module.get(model[0].loss)
-                if callable(model[0].loss):
-                    self.output_criterion = model[0].loss
-                elif isinstance(model[0].loss, str):
-                    self.output_criterion = losses_module.get(model[0].loss)
-                self.output_optimizer = O.optimizer(
-                    model.parameters(), model[0].learning_rate, momentum, optimizer
-                )
+                if not callable(loss):
+                    output_loss = losses_module.get(output_loss, **kwargs)
+                if self.output_criterion is None:
+                    self.output_criterion = output_loss
                 self.metrics = metrics
             else:
-                model.compile(optimizer, loss, learning_rate, momentum)
+                model.compile(optimizer, loss, learning_rate, momentum, **kwargs)
+    """
 
     def training_loop(
         self, train_loader, val_loader, pre_num_epochs, post_num_epochs, show_plot
