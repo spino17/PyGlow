@@ -20,13 +20,9 @@ PyGlow provide support for the following features of the 'IB theory of Deep Lear
 * Functionalities for experimental IB-based DNN analysis
 * Test IB-based DNN performance bounds
 * Flexible API structure to test theoretical ideas and hypothesis related to IB-theory or information theory in general
-* IB-based training paradigms of DNN
+* IB-based training paradigms for DNN
 * Flexible internal pipeline which allows for the implementation of custom user-defined dependence criterions or IB-based loss functions
-
-Installation
-------------
-Before any coding lets first install the package !
-Follow the instruction on 
+ 
 
 Example
 -------
@@ -45,8 +41,7 @@ Let's see a code snippet which tracks the input-hidden-label segment (called dyn
   batch_size = 64
   num_workers = 3
   validation_split = 0.2
-  pre_num_epochs = 5
-  post_num_epochs = 5
+  num_epochs = 5
 
   # load the dataset
   train_loader, val_loader, test_loader = mnist.load_data(
@@ -73,22 +68,16 @@ Let's see a code snippet which tracks the input-hidden-label segment (called dyn
   # train the model
   model.fit_generator(train_loader, val_loader, num_epochs)
 
+Now for more detailed insight into PyGlow head over to the contents !
 
-
-Guide
------
+Contents
+--------
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    
-   installation
+   gettingstarted
+   userguide
+   jupyternotebooks
+   whatsnew
    license
-
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`

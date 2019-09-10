@@ -22,15 +22,11 @@ class DataGenerator(Dataset):
         Arguments:
             X (torch.Tensor): input dataset
             y (torch.Tensor): labels
-            batch_size (int): batch size of a single batch
-            validation_split (float): proportion of the total dataset which
-            is used for validation
+            batch_size (int): batch size of a single batch validation_split (float): proportion of the total dataset which is used for validation
 
         Returns:
-            train_dataset (torch.utils.data.DataLoader): contains training data-
-            loader with processed batches
-            validation_dataset (torch.utils.data.DataLoader): contains validation
-            data-loader with processed batches
+            train_dataset (torch.utils.data.DataLoader): contains training data-loader with processed batches
+            validation_dataset (torch.utils.data.DataLoader): contains validation data-loader with processed batches
 
         """
         y = y.long().view(-1)
@@ -54,15 +50,11 @@ class DataGenerator(Dataset):
         Arguments:
             x_train (numpy.ndarray): training input dataset
             y_train (numpy.ndarray): training ground-truth labels
-            batch_size (int): batch size of a single batch
-            validation_split (float): proportion of the total dataset which
-            is used for validation
+            batch_size (int): batch size of a single batch validation_split (float): proportion of the total dataset which is used for validation
 
         Returns:
-            train_loader (torch.utils.data.DataLoader): contains training data-
-            loader with processed batches
-            val_loader (torch.utils.data.DataLoader): contains validation
-            data-loader with processed batches
+            train_loader (torch.utils.data.DataLoader): contains training data-loader with processed batches
+            val_loader (torch.utils.data.DataLoader): contains validation data-loader with processed batches
 
         """
         x_train, y_train = (

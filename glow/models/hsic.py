@@ -1,6 +1,6 @@
 import torch
 from torch import nn
-from glow.models.network import _Network
+from glow.models.network import Network
 import matplotlib.pyplot as plt
 import glow.losses as losses_module
 from glow.utils import Optimizers as O
@@ -10,7 +10,7 @@ from tqdm import tqdm
 from glow.preprocessing import DataGenerator
 
 
-class HSIC(_Network):
+class HSIC(Network):
     """
     The HSIC Bottelneck: Deep Learning without backpropagation
 

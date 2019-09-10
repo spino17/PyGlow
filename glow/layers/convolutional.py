@@ -1,20 +1,22 @@
 from torch import nn
 import glow.activations as activation_module
 import math
+from glow.layer import Layer
 
 
-class _Conv(nn.Module):
+class _Conv(Layer):
     """
-    Base abstract class for convolution layers of all rank (1 - 3).
+    Base class for all convolution layers of all rank (1 - 3).
+
+    Your convolutional layer should also subclass this class.
+
 
     Arguments:
         rank (int): rank for the convolutional operation
         filters (int): number of filters for the layer
-        kernel_size (tuple or int): size of kernel to be used for convolutional
-        operation
+        kernel_size (tuple or int): size of kernel to be used for convolutional operation
         stride (tuple or int): stride for the kernel in convolutional operations
-        padding (tuple or int): padding for the image to handle edges while
-        convoluting
+        padding (tuple or int): padding for the image to handle edges while convoluting
         dilation (tuple or int): dilation for the convolutiona operation
         activation (str): activation function to be used for the layer (default: None)
 

@@ -1,7 +1,8 @@
 from torch import nn
+from glow.layer import Layer
 
 
-class _BatchNorm(nn.Module):
+class _BatchNorm(Layer):
     def __init__(self, rank, eps, momentum):
         super().__init__()
         self.rank = rank

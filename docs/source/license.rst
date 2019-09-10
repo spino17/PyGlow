@@ -76,3 +76,9 @@ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
 CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
+
+Contact
+.......
+Feel free to contact for any PyGlow related affair and our community would love
+to help you out with any issue you are facing. Just drop a mail at 
+bhavyabhatt17@gmail.com.

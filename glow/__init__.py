@@ -21,5 +21,6 @@ from . import tensor_numpy_adapter
 from . import losses
 from . import activations
 from . import hash_functions
+from . import layer
 
-__version__ = "0.0.7"
+__version__ = "0.1.6"

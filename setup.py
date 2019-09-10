@@ -10,7 +10,7 @@ README = (HERE / "README.md").read_text()
 # This call to setup() does all the work
 setup(
     name="PyGlow",
-    version="0.0.7",
+    version="0.1.6",
     description="Information Theory of Deep Learning",
     long_description=README,
     long_description_content_type="text/markdown",

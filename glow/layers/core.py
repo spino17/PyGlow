@@ -1,10 +1,12 @@
 from torch import nn
 import glow.activations as activation_module
+from glow.layer import Layer
 
 
-class Dense(nn.Module):
+class Dense(Layer):
     """
     Class for full connected dense layer.
+
 
     Arguments:
         output_dim (int): output dimension of the dense layer
@@ -29,13 +31,13 @@ class Dense(nn.Module):
         return x
 
 
-class Dropout(nn.Module):
+class Dropout(Layer):
     """
      Class for dropout layer - regularization using noise stablity of output.
 
+
      Arguments:
-         prob (float): probability with which neurons in the previous layer is
-         dropped
+         prob (float): probability with which neurons in the previous layer is dropped
 
     """
 
@@ -53,7 +55,7 @@ class Dropout(nn.Module):
         return self.dropout_layer(x)
 
 
-class Flatten(nn.Module):
+class Flatten(Layer):
     """
     Class for flattening the input shape.
 

@@ -1,10 +1,14 @@
 from torch import nn
 import math
+from glow.layer import Layer
 
 
-class _Pooling1d(nn.Module):
+class _Pooling1d(Layer):
     """
-    Base abstract class for 1d pooling layer
+    Base class for all pooling layer modules.
+
+    Your pooling layer should also subclass this class.
+
 
     """
 
@@ -65,7 +69,7 @@ class AvgPool1d(_Pooling1d):
         return super().forward(x)
 
 
-class _Pooling2d(nn.Module):
+class _Pooling2d(Layer):
     def __init__(self, pooling_type, kernel_size, stride, padding, dilation):
         super().__init__()
         if isinstance(kernel_size, int):
@@ -147,7 +151,7 @@ class AvgPool2d(_Pooling2d):
         return super().forward(x)
 
 
-class _Pooling3d(nn.Module):
+class _Pooling3d(Layer):
     def __init__(self, pooling_type, kernel_size, stride, padding, dilation):
         super().__init__()
         if isinstance(kernel_size, int):

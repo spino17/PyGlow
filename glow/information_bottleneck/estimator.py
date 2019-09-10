@@ -7,13 +7,17 @@ import glow.utils.hsic_utils as kernel_module
 
 class Estimator:
     """
-    Class for implementing functionalities to estimate different dependence
+    Base class for all the estimator modules.
+
+    Your estimator should also subclass this class.
+
+    This Class is for implementing functionalities to estimate different dependence
     criterion in information theory like mutual information etc. These methods
     are further used in analysing training dyanmics of different architechures.
 
+
     Arguments:
-        gpu (bool): if true then all the computation is carried on `GPU` else
-        on `CPU`
+        gpu (bool): if true then all the computation is carried on `GPU` else on `CPU`
         **kwargs: the keyword that stores parameters for the estimators
 
     """
@@ -36,6 +40,7 @@ class Estimator:
         of information theory most widely used criterion is mutual information
         between the two arguments.
 
+
         Arguments:
             x (torch.Tensor): first random variable
             y (torch.Tensor): second random variable
@@ -48,10 +53,9 @@ class Estimator:
         Process smallest segment of dynamics and calculate coordinates using the
         defined criterion.
 
+
         Arguments:
-            dynamics_segment (iterable): smallest segment of the dynamics of a batch
-        containing input, hidden layer output and label in form of
-        :class:`torch.Tensor` objects
+            dynamics_segment (iterable): smallest segment of the dynamics of a batch containing input, hidden layer output and label in form of :class:`torch.Tensor` objects
 
         """
         segment_size = len(dynamics_segment)
@@ -64,7 +68,6 @@ class Estimator:
             h = dynamics_segment[idx].view(m, -1)
             output_segment.append([self.criterion(h, x), self.criterion(h, y)])
         return output_segment
-
 
 """
 class Binned(_Estimator):
@@ -94,14 +97,11 @@ class EDGE(Estimator):
     Mutual information technique propsed in the paper
     'SCALABLE MUTUAL INFORMATION ESTIMATION USING DEPENDENCE GRAPHS'
 
+
     Arguments:
-        hash_function (callable or str):
-            Hash function which is used to obtain mapping from data to dependency
-            graph nodes as described in EDGE algorithm
-        gpu (bool, optional): if true then all the computation is carried on `GPU`
-        else on `CPU`
-        **kwargs: the keyword that stores parameters for EDGE algorithm mutual
-        information criterion
+        hash_function (callable or str): hash function which is used to obtain mapping from data to dependency graph nodes as described in EDGE algorithm
+        gpu (bool, optional): if true then all the computation is carried on `GPU` else on `CPU`
+        **kwargs: the keyword that stores parameters for EDGE algorithm mutual information criterion
 
     """
 
@@ -114,6 +114,11 @@ class EDGE(Estimator):
 
     # mutual information
     def criterion(self, x, y):
+        """
+        Defines the criterion of the EDGE estimator algorithm which have
+        mutual information as its criterion.
+
+        """
         h = hash_module.get(self.hash_function, self.params_dict)
         num_sample = x.shape[0]
         F = self.params[3] * num_sample
@@ -144,11 +149,10 @@ class HSIC(Estimator):
     Class for estimating Hilbert-Schmidt Independence Criterion as done in
     paper "The HSIC Bottleneck: Deep Learning without Back-Propotion"
 
+
     Arguments:
-        kernel (str): kernel which is used for calculating K matrix in HSIC
-        criterion
-        gpu (bool): if true then all the computation is carried on `GPU`
-        else on `CPU`
+        kernel (str): kernel which is used for calculating K matrix in HSIC criterion
+        gpu (bool): if true then all the computation is carried on `GPU` else on `CPU`
         **kwargs: the keyword that stores parameters for HSIC criterion
 
     """
@@ -159,6 +163,10 @@ class HSIC(Estimator):
 
     # Hilbert-Schmid Independence Criterion
     def criterion(self, x, y):
+        """
+        Defines the HSIC criterion.
+
+        """
         x, y = x.to(self.device), y.to(self.device)
         m = x.shape[0]
         K_x = kernel_module.get(self.kernel)(x, x, self.params_dict)

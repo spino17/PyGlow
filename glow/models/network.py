@@ -11,20 +11,21 @@ from tqdm import tqdm
 import numpy as np
 
 
-class _Network(nn.Module):
+class Network(nn.Module):
     """
-    Base class for Sequential model implementation.
+    Base class for all neural network modules.
+
+    Your network should also subclass this class.
+
 
     Arguments:
         input_shape (tuple): input tensor shape
         device (torch.device or int): `GPU` or `CPU` for training purposes
         gpu (bool): true if `GPU` is enabled on the system, false otherwise
-        track_dynamics (bool): tracks the NN dynamics during training
-        (stores input-output for every intermediate layer)
+        track_dynamics (bool): tracks the NN dynamics during training (stores input-output for every intermediate layer)
 
     Attributes:
-        layer_list (iterable): an iterable of pytorch
-        :class:`torch.nn.modules.container.Sequential` type layers
+        layer_list (iterable): an iterable of pytorch :class:`torch.nn.modules.container.Sequential` type layers
         num_layers (int): number of layers in the model
 
     """
@@ -42,6 +43,7 @@ class _Network(nn.Module):
         """
         Adds specified (by the `layer_obj` argument) layer to the model. It
         automatically handles the input shape from the previous layer.
+
 
         Arguments:
             layer_obj (glow.Layer): object of specific layer to be added
@@ -88,12 +90,11 @@ class _Network(nn.Module):
         Compile the model with attaching optimizer and loss function to the
         model.
 
+
         Arguments:
-            optimizer (torch.optim.Optimizer): optimizer to be used during training
-            process
+            optimizer (torch.optim.Optimizer): optimizer to be used during training process
             loss (loss): loss function for back-propagation
-            metrics (list): list of all performance metric which needs to be
-            evaluated in validation pass
+            metrics (list): list of all performance metric which needs to be evaluated in validation pass
             learning_rate (float, optional): learning rate for gradient descent step (default: 0.001)
             momentum (float, optional): momentum for different variants of optimizers (default: 0.95)
 
@@ -132,10 +133,9 @@ class _Network(nn.Module):
         to the list 'evaluator_list' which consists all the attached evaluators
         with the model.
 
+
         Arguments:
-            evaluator_obj (glow.information_bottleneck.Estimator): evaluator
-            object with has criterion defined which will get evaluated for the
-            dynamics of the training process
+            evaluator_obj (glow.information_bottleneck.Estimator): evaluator object with has criterion defined which will get evaluated for the dynamics of the training process
 
         """
         if self.track_dynamics is True:
@@ -155,14 +155,12 @@ class _Network(nn.Module):
         """
         Training loop for training and validation.
 
+
         Arguments:
             num_epochs (int): number of epochs for training
-            train_loader (torch.utils.data.DataLoader): training dataset
-            (with already processed batches)
-            val_loader (torch.utils.data.DataLoader): validation dataset
-            (with already processed batches)
-            show_plot (bool, optional): if true plots the training loss (red),
-            validation loss (blue) vs epochs (default: True)
+            train_loader (torch.utils.data.DataLoader): training dataset (with already processed batches)
+            val_loader (torch.utils.data.DataLoader): validation dataset (with already processed batches)
+            show_plot (bool, optional): if true plots the training loss (red), validation loss (blue) vs epochs (default: True)
 
         """
         self.to(self.device)
@@ -252,15 +250,14 @@ class _Network(nn.Module):
         """
         Fits the dataset passed as numpy array (Keras like pipeline) in the arguments.
 
+
         Arguments:
             x_train (numpy.ndarray): training input dataset
             y_train (numpy.ndarray): training ground-truth labels
             batch_size (int): batch size of one batch
             num_epochs (int): number of epochs for training
-            validation_split (float, optional): proportion of the total dataset
-            to be used for validation (default: 0.2)
-            show_plot (bool, optional): if true plots the training loss (red),
-            validation loss (blue) vs epochs (default: True)
+            validation_split (float, optional): proportion of the total dataset to be used for validation (default: 0.2)
+            show_plot (bool, optional): if true plots the training loss (red), validation loss (blue) vs epochs (default: True)
 
         """
         data_obj = DataGenerator()
@@ -284,7 +281,7 @@ class _Network(nn.Module):
             return self.adapter_obj.to_numpy(y_pred)
 
 
-class Sequential(_Network):
+class Sequential(Network):
     """
     Keras like Sequential model.
 
@@ -305,15 +302,15 @@ class Sequential(_Network):
         super().__init__(input_shape, device, gpu, False)
 
 
-class IBSequential(_Network):
+class IBSequential(Network):
     """
     Class that extends standard Sequential functionalities with more
     sophisticated Information Bottleneck functionalities for analysing the
     dynamics of training.
 
+
     Arguments:
-        save_dynamics (bool, optional): if true then saves the whole training
-        process dynamics into a distributed file (for efficiency)
+        save_dynamics (bool, optional): if true then saves the whole training process dynamics into a distributed file (for efficiency)
 
     """
 
