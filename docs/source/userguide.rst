@@ -2,10 +2,12 @@ User Guide
 ==========
 
 
-Models
-------
+Standard Models
+---------------
 
 .. automodule:: network
+
+.. autoclass:: Network
     :members:
     :show-inheritance:
 
@@ -23,10 +25,27 @@ IBSequential
     :members:
     :show-inheritance:
 
-HSIC
-....
+
+'Models without Back-prop'
+--------------------------
 
 .. automodule:: hsic
+
+.. autoclass:: HSIC
+    :members:
+    :show-inheritance:
+
+HSICSequential
+..............
+
+.. autoclass:: HSICSequential
+    :members:
+    :show-inheritance:
+
+HSICSigma
+.........
+
+.. autoclass:: HSICSigma
     :members:
     :show-inheritance:
 
@@ -38,44 +57,46 @@ Layers
     :members:
     :show-inheritance:
 
-Core Layers
-...........
+Core
+....
 
 .. automodule:: core
-    :members:
-    :no-undoc-members:
+
+.. autoclass:: Dense
     :show-inheritance:
 
-Convolutional Layers
-....................
+.. autoclass:: Dropout
+    :show-inheritance:
+
+.. autoclass:: Flatten
+    :show-inheritance:
+
+
+
+Convolutional
+.............
 
 .. automodule:: convolutional
-    :members:
-    :no-undoc-members:
+    :no-members: set_input, forward
     :show-inheritance:
 
-HSIC Layers
-...........
-
-.. automodule:: hsic_output
-    :members:
-    :no-undoc-members:
-    :show-inheritance:
-
-Normalization Layers
-....................
+Normalization
+.............
 
 .. automodule:: normalization
-    :members:
+    :show-inheritance:
+
+Pooling
+.......
+
+.. automodule:: pooling
     :no-undoc-members:
     :show-inheritance:
 
-Pooling Layers
-..............
+HSIC
+....
 
-.. automodule:: pooling
-    :members:
-    :no-undoc-members:
+.. automodule:: hsic_output
     :show-inheritance:
 
 
@@ -86,6 +107,16 @@ Estimator
 .........
 
 .. automodule:: estimator
+
+.. autoclass:: Estimator
+    :members:
+    :show-inheritance:
+
+.. autoclass:: EDGE
+    :members:
+    :show-inheritance:
+
+.. autoclass:: HSIC
     :members:
     :show-inheritance:
 

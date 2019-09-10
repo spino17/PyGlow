@@ -14,6 +14,11 @@ class HSIC(Network):
     """
     The HSIC Bottelneck: Deep Learning without backpropagation
 
+    Arguments:
+        input_shape (tuple): input tensor shape
+        device (torch.device, optional):
+        gpu (bool): true if `GPU` is enabled on the system, false otherwise
+
     """
 
     def __init__(self, input_shape, device, gpu, **kwargs):
@@ -47,6 +52,16 @@ class HSIC(Network):
         return hidden_outputs
 
     def sequential_forward(self, x):
+        """
+        Sequentially calculate the output taking HSIC network as sequential
+        feedforward neural network and is equivalent to forward pass in standard
+        models.
+
+
+        Arguments:
+            x (torch.Tensor): input tensor to the network
+
+        """
         layers = self.layer_list
         h = x
         for layer_idx, layer in enumerate(layers):
@@ -81,6 +96,16 @@ class HSIC(Network):
         )
 
     def pre_training_loop(self, num_epochs, train_loader, val_loader):
+        """
+        Pre training phase in which hidden representations are learned using
+        HSIC training paradigm.
+
+        Arguments:
+            num_epochs (int): number of epochs for pre-training phase
+            train_loader (torch.utils.data.DataLoader): training dataset (with already processed batches)
+            val_loader (torch.utils.data.DataLoader): validation dataset (with already processed batches)
+
+        """
         self.to(self.device)
         train_len = len(train_loader)
         for epoch in range(num_epochs):
@@ -113,6 +138,10 @@ class HSIC(Network):
 
 
 class HSICSequential(nn.Module):
+    """
+    Base implementation for HSIC networks.
+
+    """
     def __init__(self, input_shape, gpu=True, **kwargs):
         if gpu:
             if torch.cuda.is_available():
