@@ -3,6 +3,10 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+.. image:: _static/PyGlow_logo.jpg
+  :width: 200
+  :alt: Alternative text
+
 Welcome to PyGlow's documentation!
 ==================================
 
