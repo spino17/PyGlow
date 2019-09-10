@@ -1,4 +1,4 @@
-<img src='/docs/source/_static/PyGlow_logo.jpg' width="300" height="400">
+<img src='/docs/source/_static/PyGlow_logo.jpg' width="200">
 
 PyGlow is a Python package which attempts to implement Keras like API functionalities on PyTorch backend with functionalities supporting information theoretic methods which are relevant for understanding neural network dynamics. The package is equipped with a number of state-of-the-art algorithms for estimating and calculating various kinds of information theoretic measures and quantities. Along with traditional dependence criterion for random variables like mutual information, PyGlow also have newer dependence criterion like HSIC criterion which have proved to be more robust in terms of 'Information Bottleneck Theory of Deep Learning'. 
 
