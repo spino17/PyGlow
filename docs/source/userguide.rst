@@ -131,11 +131,3 @@ Data Loading and Generation
     :members:
     :show-inheritance:
 
-
-Datasets
---------
-
-
-Architechures
--------------
-
