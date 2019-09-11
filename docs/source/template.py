@@ -7,6 +7,7 @@ class Template:
         b (int): param2
         c (int): param3
     """
+
     def __init__(self, a, b, c):
         self.a = a
         self.b = b

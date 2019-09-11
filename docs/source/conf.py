@@ -12,37 +12,37 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('/home/bhavya/PyGlow/docs/source/'))
-sys.path.append(os.path.abspath('/home/bhavya/PyGlow/glow/models/'))
-sys.path.append(os.path.abspath('/home/bhavya/PyGlow/glow/models/network.py'))
-sys.path.append(os.path.abspath('/home/bhavya/PyGlow/glow/models/hsic.py'))
-sys.path.append(os.path.abspath('/home/bhavya/PyGlow/glow/layers/'))
-sys.path.append(os.path.abspath('/home/bhavya/PyGlow/glow/information_bottleneck/'))
-sys.path.append(os.path.abspath('/home/bhavya/PyGlow/glow/preprocessing/'))
-sys.path.append(os.path.abspath('/home/bhavya/PyGlow/glow/datasets/'))
-sys.path.append(os.path.abspath('/home/bhavya/PyGlow/glow/architechures/'))
-sys.path.append(os.path.abspath('/home/bhavya/PyGlow/glow/'))
+
+sys.path.insert(0, os.path.abspath("/home/bhavya/PyGlow/docs/source/"))
+sys.path.append(os.path.abspath("/home/bhavya/PyGlow/glow/models/"))
+sys.path.append(os.path.abspath("/home/bhavya/PyGlow/glow/models/network.py"))
+sys.path.append(os.path.abspath("/home/bhavya/PyGlow/glow/models/hsic.py"))
+sys.path.append(os.path.abspath("/home/bhavya/PyGlow/glow/layers/"))
+sys.path.append(os.path.abspath("/home/bhavya/PyGlow/glow/information_bottleneck/"))
+sys.path.append(os.path.abspath("/home/bhavya/PyGlow/glow/preprocessing/"))
+sys.path.append(os.path.abspath("/home/bhavya/PyGlow/glow/datasets/"))
+sys.path.append(os.path.abspath("/home/bhavya/PyGlow/glow/architechures/"))
+sys.path.append(os.path.abspath("/home/bhavya/PyGlow/glow/"))
 
 # -- Project information -----------------------------------------------------
 
-project = 'PyGlow'
-copyright = '2019, Bhavya Bhatt'
-author = 'Bhavya Bhatt'
+project = "PyGlow"
+copyright = "2019, Bhavya Bhatt"
+author = "Bhavya Bhatt"
 
 # The full version, including alpha/beta/rc tags
-release = '0.1.7'
-master_doc = 'index'
+release = "0.1.7"
+master_doc = "index"
 
 # -- General configuration ---------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.napoleon'
-]
+extensions = ["sphinx.ext.napoleon"]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -55,9 +55,9 @@ exclude_patterns = []
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'alabaster'
+html_theme = "alabaster"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = ["_static"]

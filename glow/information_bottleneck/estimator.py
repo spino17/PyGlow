@@ -69,6 +69,7 @@ class Estimator:
             output_segment.append([self.criterion(h, x), self.criterion(h, y)])
         return output_segment
 
+
 """
 class Binned(_Estimator):
     # TODO

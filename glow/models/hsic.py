@@ -142,6 +142,7 @@ class HSICSequential(nn.Module):
     Base implementation for HSIC networks.
 
     """
+
     def __init__(self, input_shape, gpu=True, **kwargs):
         if gpu:
             if torch.cuda.is_available():
