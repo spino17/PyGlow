@@ -25,8 +25,12 @@ class Network(nn.Module):
         track_dynamics (bool): tracks the NN dynamics during training (stores input-output for every intermediate layer)
 
     Attributes:
+        input_shape (tuple): input tensor shape
         layer_list (iterable): an iterable of pytorch :class:`torch.nn.modules.container.Sequential` type layers
         num_layers (int): number of layers in the model
+        is_gpu (bool): true if `GPU` is enabled on the system, false otherwise
+        device (torch.device or int): `GPU` or `CPU` for training purposes
+        track_dynamics (bool): tracks the NN dynamics during training (stores input-output for every intermediate layer)
 
     """
 
@@ -63,6 +67,17 @@ class Network(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x):
+        """
+        Method for defining forward pass through the model.
+
+        This method needs to be overridden by your implementation contain logic
+        of the forward pass through your model.
+
+
+        Arguments:
+            x (torch.Tensor): input tensor to the model
+
+        """
         hidden_outputs = []
         layers = self.layer_list
         h = x
@@ -129,7 +144,9 @@ class Network(nn.Module):
         """
         Attaches an evaluator with the model which will get evaluated at every
         pass of batch and obtain information plane coordinates according to
-        defined criterion in the 'evaluator_obj'. It appends the 'evaluator_obj'
+        defined criterion in the 'evaluator_obj'.
+
+        It appends the 'evaluator_obj'
         to the list 'evaluator_list' which consists all the attached evaluators
         with the model.
 
@@ -151,18 +168,7 @@ class Network(nn.Module):
             evaluated_dynamics.append(self.dynamics_handler.evaluate(evaluator))
         return evaluated_dynamics
 
-    def training_loop(self, num_epochs, train_loader, val_loader, show_plot=True):
-        """
-        Training loop for training and validation.
-
-
-        Arguments:
-            num_epochs (int): number of epochs for training
-            train_loader (torch.utils.data.DataLoader): training dataset (with already processed batches)
-            val_loader (torch.utils.data.DataLoader): validation dataset (with already processed batches)
-            show_plot (bool, optional): if true plots the training loss (red), validation loss (blue) vs epochs (default: True)
-
-        """
+    def training_loop(self, num_epochs, train_loader, val_loader, show_plot):
         self.to(self.device)
         train_losses, val_losses, epochs = [], [], []
         train_len = len(train_loader)
@@ -245,7 +251,7 @@ class Network(nn.Module):
         batch_size,
         num_epochs,
         validation_split=0.2,
-        show_plot=True,
+        show_plot=False,
     ):
         """
         Fits the dataset passed as numpy array (Keras like pipeline) in the arguments.
@@ -266,9 +272,16 @@ class Network(nn.Module):
         )
         self.training_loop(num_epochs, train_loader, val_loader, show_plot=show_plot)
 
-    def fit_generator(self, train_loader, val_loader, num_epochs, show_plot=True):
+    def fit_generator(self, train_loader, val_loader, num_epochs, show_plot=False):
         """
-        Fits the dataset by taking 'data_loader' as arguments.
+        Fits the dataset by taking data-loader as argument.
+
+
+        Arguments:
+            num_epochs (int): number of epochs for training
+            train_loader (torch.utils.data.DataLoader): training dataset (with already processed batches)
+            val_loader (torch.utils.data.DataLoader): validation dataset (with already processed batches)
+            show_plot (bool, optional): if true plots the training loss (red), validation loss (blue) vs epochs (default: True)
 
         """
         self.training_loop(num_epochs, train_loader, val_loader, show_plot)
@@ -285,9 +298,12 @@ class Sequential(Network):
     """
     Keras like Sequential model.
 
+    Arguments:
+        input_shape (tuple): input tensor shape
+        gpu (bool, optional): if true then PyGlow will attempt to use `GPU`, for false `CPU` will be used (default: False)
     """
 
-    def __init__(self, input_shape, gpu=True):
+    def __init__(self, input_shape, gpu=False):
         if gpu:
             if torch.cuda.is_available():
                 device = torch.device("cuda")
@@ -304,18 +320,20 @@ class Sequential(Network):
 
 class IBSequential(Network):
     """
-    Class that extends standard Sequential functionalities with more
-    sophisticated Information Bottleneck functionalities for analysing the
-    dynamics of training.
+    Keras like Sequential model with extended more sophisticated Information
+    Bottleneck functionalities for analysing the dynamics of training.
 
 
     Arguments:
+        input_shape (tuple): input tensor shape
+        gpu (bool, optional): if true then PyGlow will attempt to use `GPU`, for false `CPU` will be used (default: False)
+        track_dynamics (bool): if true then will track the input-hidden-output dynamics segment and will allow evaluator to attach to the model, for false no track for dynamics is kept
         save_dynamics (bool, optional): if true then saves the whole training process dynamics into a distributed file (for efficiency)
 
     """
 
     def __init__(
-        self, input_shape, gpu=True, track_dynamics=False, save_dynamics=False
+        self, input_shape, gpu=False, track_dynamics=False, save_dynamics=False
     ):
         if gpu:
             if torch.cuda.is_available():

@@ -8,20 +8,7 @@ class _Conv(Layer):
     """
     Base class for all convolution layers of all rank (1 - 3).
 
-    Your convolutional layer should also subclass this class.
-
-
-    Arguments:
-        rank (int): rank for the convolutional operation
-        filters (int): number of filters for the layer
-        kernel_size (tuple or int): size of kernel to be used for convolutional operation
-        stride (tuple or int): stride for the kernel in convolutional operations
-        padding (tuple or int): padding for the image to handle edges while convoluting
-        dilation (tuple or int): dilation for the convolutiona operation
-        activation (str): activation function to be used for the layer (default: None)
-
     """
-
     def __init__(
         self,
         rank,
@@ -144,6 +131,20 @@ class _Conv(Layer):
 
 
 class Conv1d(_Conv):
+    """
+    Convolutional layer of rank 1.
+
+
+    Arguments:
+        filters (int): number of filters for the layer
+        kernel_size (int): size of kernel to be used for convolutional operation
+        stride (int): stride for the kernel in convolutional operations
+        padding (int, optional): padding for the image to handle edges while convoluting (default: 0)
+        dilation (int, optional): dilation for the convolutional operation (default: 1)
+        activation (str): activation function to be used for the layer (default: None)
+
+    """
+
     def __init__(
         self,
         filters,
@@ -151,7 +152,7 @@ class Conv1d(_Conv):
         stride,
         padding=0,
         dilation=1,
-        activation="relu",
+        activation=None,
         **kwargs
     ):
         super().__init__(
@@ -174,6 +175,20 @@ class Conv1d(_Conv):
 
 
 class Conv2d(_Conv):
+    """
+    Convolutional layer of rank 2.
+
+
+    Arguments:
+        filters (int): number of filters for the layer
+        kernel_size (int): size of kernel to be used for convolutional operation
+        stride (int): stride for the kernel in convolutional operations
+        padding (int, optional): padding for the image to handle edges while convoluting (default: 0)
+        dilation (int, optional): dilation for the convolutional operation (default: 1)
+        activation (str): activation function to be used for the layer (default: None)
+
+    """
+
     def __init__(
         self,
         filters,
@@ -181,7 +196,7 @@ class Conv2d(_Conv):
         stride,
         padding=0,
         dilation=1,
-        activation="relu",
+        activation=None,
         **kwargs
     ):
         if isinstance(kernel_size, int):
@@ -212,8 +227,28 @@ class Conv2d(_Conv):
 
 
 class Conv3d(_Conv):
+    """
+    Convolutional layer of rank 3.
+
+
+    Arguments:
+        filters (int): number of filters for the layer
+        kernel_size (int): size of kernel to be used for convolutional operation
+        stride (int): stride for the kernel in convolutional operations
+        padding (int, optional): padding for the image to handle edges while convoluting (default: 0)
+        dilation (int, optional): dilation for the convolutional operation (default: 1)
+        activation (str): activation function to be used for the layer (default: None)
+
+    """
     def __init__(
-        self, filters, kernel_size, stride, padding, dilation, activation, **kwargs
+        self,
+        filters,
+        kernel_size,
+        stride,
+        padding=0,
+        dilation=1,
+        activation=None,
+        **kwargs
     ):
         if isinstance(kernel_size, int):
             kernel_size = (kernel_size, kernel_size, kernel_size)

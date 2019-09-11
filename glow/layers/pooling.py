@@ -5,13 +5,9 @@ from glow.layer import Layer
 
 class _Pooling1d(Layer):
     """
-    Base class for all pooling layer modules.
-
-    Your pooling layer should also subclass this class.
-
+    Base class for all 1d pooling layer modules.
 
     """
-
     def __init__(self, pooling_type, kernel_size, stride, padding, dilation):
         super().__init__()
         self.pooling_type = pooling_type  # Max or Avg
@@ -46,7 +42,18 @@ class _Pooling1d(Layer):
 
 
 class MaxPool1d(_Pooling1d):
-    def __init__(self, kernel_size, stride, padding, dilation=1):
+    """
+    1-D max pooling layer.
+
+
+    Arguments:
+        kernel_size (int): size of kernel to be used for pooling operation
+        stride (int): stride for the kernel in pooling operations
+        padding (int, optional): padding for the image to handle edges while pooling (default: 0)
+        dilation (int, optional): dilation for the pooling operation (default: 1)
+
+    """
+    def __init__(self, kernel_size, stride, padding=0, dilation=1):
         super().__init__("Max", kernel_size, stride, padding, dilation)
         self.args = [kernel_size, stride, padding, dilation]
 
@@ -58,7 +65,17 @@ class MaxPool1d(_Pooling1d):
 
 
 class AvgPool1d(_Pooling1d):
-    def __init__(self, kernel_size, stride, padding):
+    """
+    1-D average pooling layer.
+
+
+    Arguments:
+        kernel_size (int): size of kernel to be used for pooling operation
+        stride (int): stride for the kernel in pooling operations
+        padding (int, optional): padding for the image to handle edges while pooling (default: 0)
+
+    """
+    def __init__(self, kernel_size, stride, padding=0):
         super().__init__("Avg", kernel_size, stride, padding, 1)
         self.args = [kernel_size, stride, padding]
 
@@ -128,7 +145,18 @@ class _Pooling2d(Layer):
 
 
 class MaxPool2d(_Pooling2d):
-    def __init__(self, kernel_size, stride, padding, dilation=1):
+    """
+    2-D max pooling layer.
+
+
+    Arguments:
+        kernel_size (int): size of kernel to be used for pooling operation
+        stride (int): stride for the kernel in pooling operations
+        padding (int, optional): padding for the image to handle edges while pooling (default: 0)
+        dilation (int, optional): dilation for the pooling operation (default: 1)
+
+    """
+    def __init__(self, kernel_size, stride, padding=0, dilation=1):
         super().__init__("Max", kernel_size, stride, padding, dilation)
         self.args = [kernel_size, stride, padding, dilation]
 
@@ -140,7 +168,17 @@ class MaxPool2d(_Pooling2d):
 
 
 class AvgPool2d(_Pooling2d):
-    def __init__(self, kernel_size, stride, padding):
+    """
+    2-D average pooling layer.
+
+
+    Arguments:
+        kernel_size (int): size of kernel to be used for pooling operation
+        stride (int): stride for the kernel in pooling operations
+        padding (int, optional): padding for the image to handle edges while pooling (default: 0)
+
+    """
+    def __init__(self, kernel_size, stride, padding=0):
         super().__init__("Avg", kernel_size, stride, padding, (1, 1))
         self.args = [kernel_size, stride, padding]
 
@@ -221,7 +259,18 @@ class _Pooling3d(Layer):
 
 
 class MaxPool3d(_Pooling3d):
-    def __init__(self, kernel_size, stride, padding, dilation=1):
+    """
+    3-D max pooling layer.
+
+
+    Arguments:
+        kernel_size (int): size of kernel to be used for pooling operation
+        stride (int): stride for the kernel in pooling operations
+        padding (int, optional): padding for the image to handle edges while pooling (default: 0)
+        dilation (int, optional): dilation for the pooling operation (default: 1)
+
+    """
+    def __init__(self, kernel_size, stride, padding=0, dilation=1):
         super().__init__("Max", kernel_size, stride, padding, dilation)
         self.args = [kernel_size, stride, padding, dilation]
 
@@ -233,7 +282,17 @@ class MaxPool3d(_Pooling3d):
 
 
 class AvgPool3d(_Pooling3d):
-    def __init__(self, kernel_size, stride, padding):
+    """
+    3-D average pooling layer.
+
+
+    Arguments:
+        kernel_size (int): size of kernel to be used for pooling operation
+        stride (int): stride for the kernel in pooling operations
+        padding (int, optional): padding for the image to handle edges while pooling (default: 0)
+
+    """
+    def __init__(self, kernel_size, stride, padding=0):
         super().__init__("Avg", kernel_size, stride, padding, (1, 1, 1))
         self.args = [kernel_size, stride, padding]
 

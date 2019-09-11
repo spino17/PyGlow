@@ -77,26 +77,69 @@ Convolutional
 .............
 
 .. automodule:: convolutional
-    :no-members: set_input, forward
+
+.. autoclass:: Conv1d
+    :show-inheritance:
+
+.. autoclass:: Conv2d
+    :show-inheritance:
+
+.. autoclass:: Conv3d
     :show-inheritance:
 
 Normalization
 .............
 
 .. automodule:: normalization
+
+.. autoclass:: BatchNorm1d
+    :show-inheritance:
+
+.. autoclass:: BatchNorm2d
+    :show-inheritance:
+
+.. autoclass:: BatchNorm3d
     :show-inheritance:
 
 Pooling
 .......
 
 .. automodule:: pooling
-    :no-undoc-members:
+
+1-D
+***
+
+.. autoclass:: MaxPool1d
     :show-inheritance:
+
+.. autoclass:: AvgPool1d
+    :show-inheritance:
+
+2-D
+***
+
+.. autoclass:: MaxPool2d
+    :show-inheritance:
+
+.. autoclass:: AvgPool2d
+    :show-inheritance:
+
+3-D
+***
+
+.. autoclass:: MaxPool3d
+    :show-inheritance:
+
+.. autoclass:: AvgPool3d
+    :show-inheritance:
+
 
 HSIC
 ....
 
 .. automodule:: hsic_output
+
+.. autoclass:: HSICoutput
     :show-inheritance:
 
 

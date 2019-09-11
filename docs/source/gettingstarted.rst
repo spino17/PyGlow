@@ -43,7 +43,7 @@ First verify that it's installed successfully on your system by running the foll
   
   import glow
   glow.__version__
-  >>> '0.1.6'
+>>> '0.1.6'
 
 Now that you have verified the installation and have tried something yourself, head over to the examples section to make yourself comfortable with coding semantics starting with this example.
 
@@ -127,10 +127,9 @@ following `the Try Git tutorial`_.
 If you already know how all this works and would like to contribute new
 features then that's awesome! Before rushing out though please make sure it
 is within the scope of the library so you don't waste your time -
-`email`_ us or `chat`_ with us on Riot!.
+`email`_ us.
 
-.. _`email`: developers@einsteinpy.org
-.. _`chat`: https://riot.im/app/#/room/#einsteinpy:matrix.org
+.. _`email`: bhavyabhatt17@gmail.com
 
 If the feature you suggest happens to be useful and within scope, you will
 probably be advised to create a new `wiki`_ page with some information
