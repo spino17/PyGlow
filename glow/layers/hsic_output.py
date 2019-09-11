@@ -15,5 +15,5 @@ class HSICoutput(Dense):
 
     """
 
-    def __init__(self, output_dim, activation='softmax'):
+    def __init__(self, output_dim, activation="softmax"):
         super().__init__(output_dim, activation)

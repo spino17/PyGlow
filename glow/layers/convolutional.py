@@ -9,6 +9,7 @@ class _Conv(Layer):
     Base class for all convolution layers of all rank (1 - 3).
 
     """
+
     def __init__(
         self,
         rank,
@@ -240,6 +241,7 @@ class Conv3d(_Conv):
         activation (str): activation function to be used for the layer (default: None)
 
     """
+
     def __init__(
         self,
         filters,

@@ -35,5 +35,8 @@ class Layer(nn.Module):
         Arguments:
             x (torch.Tensor): input tensor to the layer
 
+        Returns:
+            y (torch.Tensor): output tensor of the layer
+
         """
         pass

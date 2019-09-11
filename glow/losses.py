@@ -11,8 +11,7 @@ def NLLLoss(y_pred, y_true):
     return nn.NLLLoss()(y_pred, y_true)
 
 
-def HSICLoss(z, x, y, gpu, sigma, regularize_coeff):
-    estimator = HSIC(sigma, gpu)
+def HSICLoss(z, x, y, estimator, regularize_coeff):
     y = one_hot(y, num_classes=-1).float()
     loss_1 = estimator.criterion(z, x)
     loss_2 = estimator.criterion(z, y)
@@ -25,20 +24,6 @@ def get(identifier, **kwargs):
     elif identifier == "NLLLoss":
         return NLLLoss
     elif identifier == "HSIC_loss":
-
-        def curry_func(z, x, y, gpu):
-            if "sigma" in kwargs.keys():
-                sigma = kwargs["sigma"]
-            else:
-                raise Exception("Cannot find sigma value for HSIC loss function")
-            if "regularize_coeff" in kwargs.keys():
-                regularize_coeff = kwargs["regularize_coeff"]
-            else:
-                raise Exception(
-                    "Cannot find regularization coefficient for HSIC loss function"
-                )
-            return HSICLoss(z, x, y, gpu, sigma, regularize_coeff)
-
-        return curry_func
+        return HSICLoss
     else:
         raise ValueError("Could not interpret " "loss function identifier:", identifier)

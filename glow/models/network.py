@@ -77,6 +77,11 @@ class Network(nn.Module):
         Arguments:
             x (torch.Tensor): input tensor to the model
 
+        Returns:
+            (tuple): tuple containing:
+                (torch.Tensor): output tensor of the network
+                (iterable): list of hidden layer outputs for dynamics tracking purposes
+
         """
         hidden_outputs = []
         layers = self.layer_list

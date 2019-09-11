@@ -45,6 +45,9 @@ class Estimator:
             x (torch.Tensor): first random variable
             y (torch.Tensor): second random variable
 
+        Returns:
+            (torch.Tensor): calculated criterion of the two random variables 'x' and 'y'
+
         """
         pass
 
@@ -56,6 +59,9 @@ class Estimator:
 
         Arguments:
             dynamics_segment (iterable): smallest segment of the dynamics of a batch containing input, hidden layer output and label in form of :class:`torch.Tensor` objects
+
+        Returns:
+            (iterable): list of calculated coordinates according to the criterion with length equal to 'len(dynamics_segment)-2'
 
         """
         segment_size = len(dynamics_segment)

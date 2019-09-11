@@ -42,13 +42,6 @@ HSICSequential
     :members:
     :show-inheritance:
 
-HSICSigma
-.........
-
-.. autoclass:: HSICSigma
-    :members:
-    :show-inheritance:
-
 
 Layers
 ------
@@ -152,10 +145,6 @@ Estimator
 .. automodule:: estimator
 
 .. autoclass:: Estimator
-    :members:
-    :show-inheritance:
-
-.. autoclass:: EDGE
     :members:
     :show-inheritance:
 

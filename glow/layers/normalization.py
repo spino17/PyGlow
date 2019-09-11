@@ -7,6 +7,7 @@ class _BatchNorm(Layer):
     Base class for all batch normalization layers.
 
     """
+
     def __init__(self, dim, eps, momentum):
         super().__init__()
         self.dim = dim
@@ -46,6 +47,7 @@ class BatchNorm1d(_BatchNorm):
         momentum (float): the value used for the running_mean and running_var computation. Can be set to None for cumulative moving average (i.e. simple average) (default: 0.1)
 
     """
+
     def __init__(self, eps=1e-05, momentum=0.1):
         super().__init__(1, eps, momentum)
         self.args = [eps, momentum]
@@ -67,6 +69,7 @@ class BatchNorm2d(_BatchNorm):
         momentum (float): the value used for the running_mean and running_var computation. Can be set to None for cumulative moving average (i.e. simple average) (default: 0.1)
 
     """
+
     def __init__(self, eps=1e-05, momentum=0.1):
         super().__init__(2, eps, momentum)
         self.args = [eps, momentum]
@@ -88,6 +91,7 @@ class BatchNorm3d(_BatchNorm):
         momentum (float): the value used for the running_mean and running_var computation. Can be set to None for cumulative moving average (i.e. simple average) (default: 0.1)
 
     """
+
     def __init__(self, eps=1e-05, momentum=0.1):
         super().__init__(3, eps, momentum)
         self.args = [eps, momentum]

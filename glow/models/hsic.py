@@ -8,6 +8,7 @@ from glow.layers.core import Flatten, Dropout
 from glow.layers import HSICoutput
 from tqdm import tqdm
 from glow.preprocessing import DataGenerator
+from glow.information_bottleneck import Estimator
 
 
 class HSIC(Network):
@@ -23,10 +24,21 @@ class HSIC(Network):
 
     def __init__(self, input_shape, device, gpu, **kwargs):
         super().__init__(input_shape, device, gpu)
-        self.params_dict = kwargs
         self.loss_dict = {}  # stores the losses of the individual layers
 
-    def add(self, layer_obj, loss=None, **kwargs):
+    def add(self, layer_obj, loss_criterion=None, regularize_coeff=0):
+        """
+        Adds specified layer and loss criterion to the model which will be used
+        for measuring objective between layer's current representation and
+        optimal representation (representation with minimum IB-based objective).
+
+
+        Arguments:
+            layer_obj (glow.Layer): object of specific layer to be added
+            loss_criterion (glow.information_bottleneck.Estimator): loss function for the layer which is added
+            regularize_coeff (float): regularization coefficient between generalization and compression of IB type objective
+
+        """
         if self.num_layers == 0:
             prev_input_shape = self.input_shape
         else:
@@ -34,12 +46,27 @@ class HSIC(Network):
         layer_obj.set_input(prev_input_shape)
         self.layer_list.append(self._make_layer_unit(layer_obj))
         self.num_layers = self.num_layers + 1
-        if loss is not None:
-            if not callable(loss):
-                loss = losses_module.get(loss, **kwargs)
-            self.loss_dict[self.num_layers - 1] = loss
+        if loss_criterion is not None:
+            if isinstance(loss_criterion, Estimator):
+                self.loss_dict[self.num_layers - 1] = [loss_criterion, regularize_coeff]
+            else:
+                raise Exception("loss criterion expects a instance of 'Estimator'")
 
     def forward(self, x):
+        """
+        Method for defining forward pass through the model.
+
+        This method needs to be overridden by your implementation which contains
+        the logic of the forward pass through your model.
+
+
+        Arguments:
+            x (torch.Tensor): input tensor to the model
+
+        Returns:
+            (iterable): list of hidden layer outputs (objects of type :class:`torch.Tensor`) which are detached from their previous layer's gradients
+
+        """
         layers = self.layer_list
         t = x
         iter_num = 0
@@ -61,6 +88,9 @@ class HSIC(Network):
         Arguments:
             x (torch.Tensor): input tensor to the network
 
+        Returns:
+            (torch.Tensor): output of the sequential feedforward network
+
         """
         layers = self.layer_list
         h = x
@@ -81,16 +111,33 @@ class HSIC(Network):
 
     def compile(
         self,
-        optimizer="SGD",
-        loss="HSIC_loss",
+        loss_criterion,
+        optimizer='SGD',
+        regularize_coeff=100,
         learning_rate=0.001,
         momentum=0.95,
         **kwargs
     ):
-        if callable(loss):
-            self.criterion = loss
-        elif isinstance(loss, str):
-            self.criterion = losses_module.get(loss, **kwargs)
+        """
+        Compile the HSIC network with loss criterion (criterion objective used
+        as loss function for intermediate representations).
+
+        All the layers which did not have any criterion passed as argument at
+        the time of '.add' of layer automatically takes this loss criterion.
+
+
+        Arguments:
+            loss_criterion (glow.information_bottleneck.Estimator): criterion function which is an instance of `glow.information_bottleneck.Estimator`
+            optimizer (torch.optim.Optimizer): optimizer to be used during training process for all the layers
+            regularize_coeff (float): trade-off parameter between generalization and compression according to IB-based theory
+            learning_rate (float, optional): learning rate for gradient descent step (default: 0.001)
+            momentum (float, optional): momentum for different variants of optimizers (default: 0.95)
+
+        """
+        if isinstance(loss_criterion, Estimator):
+            self.global_criterion = [loss_criterion, regularize_coeff]
+        else:
+            raise Exception("loss criterion expects a instance of 'Estimator'")
         self.layer_optimizers = self.make_layer_optimizers(
             optimizer, learning_rate, momentum
         )
@@ -113,6 +160,7 @@ class HSIC(Network):
             print("\n")
             print("Pre-Train-Epoch " + str(epoch + 1) + "/" + str(num_epochs))
             pbar = tqdm(total=train_len)
+            i = 0
             for x, y in train_loader:
                 # contains the hidden representation from forward pass
                 x, y = x.to(self.device), y.to(self.device)
@@ -124,8 +172,17 @@ class HSIC(Network):
                         if idx in self.loss_dict.keys():
                             criterion = self.loss_dict[idx]
                         else:
-                            criterion = self.criterion
-                        loss = criterion(z, x.view(x.shape[0], -1), y, self.is_gpu)
+                            criterion = self.global_criterion
+
+                        loss_criterion = criterion[0]
+                        regularize_coeff = criterion[1]
+                        loss = losses_module.get("HSIC_loss")(
+                            z,
+                            x.view(x.shape[0], -1),
+                            y,
+                            loss_criterion,
+                            regularize_coeff,
+                        )
                         loss.backward()
                         self.layer_optimizers[idx].step()
                 pbar.update(1)
@@ -137,13 +194,21 @@ class HSIC(Network):
                 params.requires_grad = False
 
 
-class HSICSequential(nn.Module):
+class HSICSequential(HSIC):
     """
     Base implementation for HSIC networks.
 
+    This class forms instances for multi-model sigma network as given in the paper
+    https://arxiv.org/abs/1908.01580 .
+
+
+    Arguments:
+        input_shape (tuple): input tensor shape
+        gpu (bool, optional): if true then PyGlow will attempt to use `GPU`, for false `CPU` will be used (default: False)
+
     """
 
-    def __init__(self, input_shape, gpu=True, **kwargs):
+    def __init__(self, input_shape, gpu=False, **kwargs):
         if gpu:
             if torch.cuda.is_available():
                 device = torch.device("cuda")
@@ -153,15 +218,17 @@ class HSICSequential(nn.Module):
         else:
             device = torch.device("cpu")
             print("Running on CPU device !")
-        super().__init__(self, input_shape, device, gpu, **kwargs)
+        super().__init__(input_shape, device, gpu, **kwargs)
 
 
-class HSICSigma(nn.Module):
-    """
+"""
+class HSICSigma(HSIC):
+
     Ensemble various values of sigma to capture dependence at various scales
     and give aggregate output - Sigma Network
 
-    """
+    for more information refer to the paper: https://arxiv.org/abs/1908.01580
+
 
     def __init__(self, input_shape, gpu=True, **kwargs):
         if gpu:
@@ -226,7 +293,6 @@ class HSICSigma(nn.Module):
         )
         self.metrics = metrics
 
-    """
     def compile(
         self,
         optimizer,
@@ -247,7 +313,6 @@ class HSICSigma(nn.Module):
                 self.metrics = metrics
             else:
                 model.compile(optimizer, loss, learning_rate, momentum, **kwargs)
-    """
 
     def training_loop(
         self, train_loader, val_loader, pre_num_epochs, post_num_epochs, show_plot
@@ -370,3 +435,4 @@ class HSICSigma(nn.Module):
         self.training_loop(
             train_loader, val_loader, pre_num_epochs, post_num_epochs, show_plot
         )
+"""
