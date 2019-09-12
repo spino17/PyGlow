@@ -1,1 +1,2 @@
-groundwork-sphinx-theme
+sphinx_rtd_theme
+msmb_theme

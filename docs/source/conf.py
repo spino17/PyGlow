@@ -60,8 +60,6 @@ exclude_patterns = []
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-
-html_theme = 'groundwork'
-
-html_static_path = ["_static"]
-
+html_theme = 'msmb_theme'
+import msmb_theme
+html_theme_path = [msmb_theme.get_html_theme_path()]
