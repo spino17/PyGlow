@@ -13,16 +13,16 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath("/home/bhavya/PyGlow/docs/source/"))
-sys.path.append(os.path.abspath("/home/bhavya/PyGlow/glow/models/"))
-sys.path.append(os.path.abspath("/home/bhavya/PyGlow/glow/models/network.py"))
-sys.path.append(os.path.abspath("/home/bhavya/PyGlow/glow/models/hsic.py"))
-sys.path.append(os.path.abspath("/home/bhavya/PyGlow/glow/layers/"))
-sys.path.append(os.path.abspath("/home/bhavya/PyGlow/glow/information_bottleneck/"))
-sys.path.append(os.path.abspath("/home/bhavya/PyGlow/glow/preprocessing/"))
-sys.path.append(os.path.abspath("/home/bhavya/PyGlow/glow/datasets/"))
-sys.path.append(os.path.abspath("/home/bhavya/PyGlow/glow/architechures/"))
-sys.path.append(os.path.abspath("/home/bhavya/PyGlow/glow/"))
+sys.path.insert(0, os.path.abspath("./"))
+sys.path.append(os.path.abspath("./../../glow/models/"))
+sys.path.append(os.path.abspath("./../../glow/models/network.py"))
+sys.path.append(os.path.abspath("./../../glow/models/hsic.py"))
+sys.path.append(os.path.abspath("./../../glow/layers/"))
+sys.path.append(os.path.abspath("./../../glow/information_bottleneck/"))
+sys.path.append(os.path.abspath("./../../glow/preprocessing/"))
+sys.path.append(os.path.abspath("./../../glow/datasets/"))
+sys.path.append(os.path.abspath("./../../glow/architechures/"))
+sys.path.append(os.path.abspath("./../../glow/"))
 
 # -- Project information -----------------------------------------------------
 
