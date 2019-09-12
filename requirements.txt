@@ -1,2 +1,1 @@
-sphinx_rtd_theme
-msmb_theme
+sphinx-rtd-theme
