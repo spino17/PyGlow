@@ -117,7 +117,7 @@ pip install -i https://test.pypi.org/simple/ PyGlow
 
 # Documentation
 
-Entire documentation is available on [Read the Docs](https://pyglow.readthedocs.io/en/latest/).
+Entire documentation is available on [Read the Docs](http://pyglow.000webhostapp.com/).
 
 
 
