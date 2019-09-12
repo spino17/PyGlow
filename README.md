@@ -75,9 +75,9 @@ model.fit_generator(train_loader, val_loader, num_epochs)
 
 That's it ! you can now extract the evaluated dynamics from the model. For complete code checkout this [notebook](<https://github.com/spino17/PyGlow/blob/master/docs/source/examples/Analysing_dynamics_HS_Criterion.ipynb>).
 
-Now that you have seen the exciting implications of PyGlow and with how much clean interface you can implement information theoretic methods for your own model,  just head over to install it on your local machine and to really open the box of deep learning !
+Now that you have seen the exciting implications of PyGlow and with how much clean interface you can implement information theoretic methods for your own model, just head over to install it on your local machine and to really open the box of deep learning !
 
-You can find more example on either docs page at ... or related notebooks in github repo at [examples](<https://github.com/spino17/PyGlow/tree/master/docs/source/examples>).
+You can find more examples on either [docs page](http://pyglow.000webhostapp.com/jupyternotebooks.html) or related notebooks in github repo at [examples](<https://github.com/spino17/PyGlow/tree/master/docs/source/examples>).
 
 
 
