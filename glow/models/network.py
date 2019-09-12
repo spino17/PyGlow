@@ -195,7 +195,6 @@ class Network(nn.Module):
                 dynamics_segment = [x] + dynamics_segment
                 if self.track_dynamics and len(self.evaluator_list) > 0:
                     self.dynamics_handler = dynamics_module.get(dynamics_segment)
-                    # batch_collector.append([x, *hidden_outputs, y])
                     evaluated_dynamics_segment = self.evaluate_dynamics()
                     batch_collector.append(evaluated_dynamics_segment)
 

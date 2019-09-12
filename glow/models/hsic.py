@@ -13,7 +13,12 @@ from glow.information_bottleneck import Estimator
 
 class HSIC(Network):
     """
-    The HSIC Bottelneck: Deep Learning without backpropagation
+    The HSIC Bottelneck: Deep Learning without backpropagation.
+
+    Base class for all HSIC network.
+
+    Your HSIC network should also subclass this class.
+
 
     Arguments:
         input_shape (tuple): input tensor shape
@@ -111,7 +116,7 @@ class HSIC(Network):
 
     def compile(
         self,
-        loss_criterion,
+        loss_criterion=None,
         optimizer='SGD',
         regularize_coeff=100,
         learning_rate=0.001,
@@ -177,7 +182,7 @@ class HSIC(Network):
                         loss_criterion = criterion[0]
                         regularize_coeff = criterion[1]
                         loss = losses_module.get("HSIC_loss")(
-                            z,
+                            z.view(z.shape[0], -1),
                             x.view(x.shape[0], -1),
                             y,
                             loss_criterion,
