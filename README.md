@@ -2,7 +2,7 @@
   <img src='/docs/source/_static/PyGlow_complete_logo.jpg' width="600">
 </p>
 
-PyGlow is a Python package which attempts to implement Keras like API functionalities on PyTorch backend with functionalities supporting information theoretic methods which are relevant for understanding neural network dynamics. The package is equipped with a number of state-of-the-art algorithms for estimating and calculating various kinds of information theoretic measures. Along with traditional dependence criterion for random variables like mutual information, PyGlow also have newer dependence criterion like HSIC criterion which have proved to be more robust in terms of 'Information Bottleneck Theory of Deep Learning'. 
+PyGlow is a Python package which attempts to implement Keras like API struture on PyTorch backend. It provides functionalities which supports information theoretic methods in deep learning. These methods are relevant for understanding neural network dynamics in information plane. The package is equipped with a number of state-of-the-art algorithms for estimating and calculating various kinds of information theoretic measures. The package also provides intensive support for information bottleneck based methods in deep learning. 
 
 
 
@@ -75,9 +75,9 @@ model.fit_generator(train_loader, val_loader, num_epochs)
 
 That's it ! you can now extract the evaluated dynamics from the model. For complete code checkout this [notebook](<https://github.com/spino17/PyGlow/blob/master/docs/source/examples/Analysing_dynamics_HS_Criterion.ipynb>).
 
-Now that you have seen the exciting implications of PyGlow and with how much clean interface you can implement information theoretic methods for your own model,  just head over to install it on your local machine and really unbox deep learning !
+Now that you have seen the exciting implications of PyGlow and with how much clean interface you can implement information theoretic methods for your own model, just head over to install it on your local machine and to really open the box of deep learning !
 
-You can find more example on either docs page at ... or related notebooks in github repo at [examples](<https://github.com/spino17/PyGlow/tree/master/docs/source/examples>).
+You can find more examples on either [docs page](http://pyglow.000webhostapp.com/jupyternotebooks.html) or related notebooks in github repo at [examples](<https://github.com/spino17/PyGlow/tree/master/docs/source/examples>).
 
 
 
@@ -99,25 +99,34 @@ PyGlow requires the following Python packages:
 
 ### PyTorch
 
-PyGlow requires PyTorch backend, so to install it first run the following command.
+PyGlow requires PyTorch backend, so to install it first run the following command (if already installed then skip this section).
 
+```console
+pip install torch
+```
 Now its time to install PyGlow on your system !
-
-
 
 ## Installing PyGlow
 
-Currently the package is in development phase and is only available on Test PyPI .
+Currently the package is in development phase and can be installed from either Test PyPI or PyPI .
+
+From TestPyPI
+*************
 
 ```console
 pip install -i https://test.pypi.org/simple/ PyGlow
 ```
 
+From PyPI
+*********
+```console
+   pip install PyGlow
+```
 
 
 # Documentation
 
-Entire documentation is available on [Read the Docs](https://pyglow.readthedocs.io/en/latest/).
+Entire documentation is available on [Read the Docs](http://pyglow.000webhostapp.com/).
 
 
 
