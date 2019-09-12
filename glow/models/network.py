@@ -45,8 +45,7 @@ class Network(nn.Module):
 
     def add(self, layer_obj):
         """
-        Adds specified (by the `layer_obj` argument) layer to the model. It
-        automatically handles the input shape from the previous layer.
+        Adds specified (by the `layer_obj` argument) layer to the model.
 
 
         Arguments:
@@ -152,7 +151,7 @@ class Network(nn.Module):
         defined criterion in the 'evaluator_obj'.
 
         It appends the 'evaluator_obj'
-        to the list 'evaluator_list' which consists all the attached evaluators
+        to the list 'evaluator_list' which contains all the attached evaluators
         with the model.
 
 

@@ -23,4 +23,4 @@ from . import activations
 from . import hash_functions
 from . import layer
 
-__version__ = "0.1.6"
+__version__ = "0.1.7"

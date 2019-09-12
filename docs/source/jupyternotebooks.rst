@@ -1,6 +1,8 @@
 Jupyter Notebooks
 =================
 
+.. _jupyter_notebooks_label:
+
 .. toctree::
    :maxdepth: 1
    

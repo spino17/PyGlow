@@ -21,16 +21,28 @@ Installing dependencies
 
 PyTorch
 *******
-PyGlow requires PyTorch backend, so to install it first run the following command.
+PyGlow requires PyTorch backend, so to install it first run the following command. ::
+
+   pip install torch
 
 Now its time to install PyGlow on your system !
 
 Installing PyGlow
 .................
 
-Currently the package is in development phase and is only available on Test PyPI .
+Currently the package is in development phase and can be installed from either Test PyPI or PyPI .
 
-pip install -i https://test.pypi.org/simple/ PyGlow
+From TestPyPI
+*************
+::
+
+   pip install -i https://test.pypi.org/simple/ PyGlow
+
+From PyPI
+*********
+::
+
+   pip install PyGlow
 
 
 Running your first code with PyGlow

@@ -154,7 +154,7 @@ class EDGE(Estimator):
 class HSIC(Estimator):
     """
     Class for estimating Hilbert-Schmidt Independence Criterion as done in
-    paper "The HSIC Bottleneck: Deep Learning without Back-Propotion".
+    paper "The HSIC Bottleneck: Deep Learning without Back-Propagation".
 
 
     Arguments:
