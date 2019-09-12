@@ -9,21 +9,18 @@ Standard Models
 
 .. autoclass:: Network
     :members:
-    :show-inheritance:
 
 Sequential
 ..........
 
 .. autoclass:: Sequential
     :members:
-    :show-inheritance:
 
 IBSequential
 ............
 
 .. autoclass:: IBSequential
     :members:
-    :show-inheritance:
 
 
 'Models without Back-prop'
@@ -33,14 +30,12 @@ IBSequential
 
 .. autoclass:: HSIC
     :members:
-    :show-inheritance:
 
 HSICSequential
 ..............
 
 .. autoclass:: HSICSequential
     :members:
-    :show-inheritance:
 
 
 Layers
@@ -48,7 +43,6 @@ Layers
 
 .. automodule:: layer
     :members:
-    :show-inheritance:
 
 Core
 ....
@@ -146,11 +140,9 @@ Estimator
 
 .. autoclass:: Estimator
     :members:
-    :show-inheritance:
 
 .. autoclass:: HSIC
     :members:
-    :show-inheritance:
 
 
 Preprocessing
@@ -161,5 +153,4 @@ Data Loading and Generation
 
 .. automodule:: data_generator
     :members:
-    :show-inheritance:
 
