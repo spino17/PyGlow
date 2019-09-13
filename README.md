@@ -99,29 +99,26 @@ PyGlow requires the following Python packages:
 
 ### PyTorch
 
-PyGlow requires PyTorch backend, so to install it first run the following command (if already installed then skip this section).
-
+PyGlow requires PyTorch backend, so to install it first run the following command.
 ```console
-pip install torch
+   pip install torch
 ```
+
 Now its time to install PyGlow on your system !
 
 ## Installing PyGlow
 
 Currently the package is in development phase and can be installed from either Test PyPI or PyPI .
 
-From TestPyPI
-*************
-
+### From TestPyPI
 ```console
-pip install -i https://test.pypi.org/simple/ PyGlow
+   pip install -i https://test.pypi.org/simple/ PyGlow
 ```
-
-From PyPI
-*********
+### From PyPI
 ```console
    pip install PyGlow
 ```
+
 
 
 # Documentation
