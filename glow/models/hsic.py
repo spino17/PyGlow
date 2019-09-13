@@ -132,7 +132,7 @@ class HSIC(Network):
 
 
         Arguments:
-            loss_criterion (glow.information_bottleneck.Estimator): criterion function which is an instance of `glow.information_bottleneck.Estimator`
+            loss_criterion (glow.information_bottleneck.Estimator): criterion function which is an instance of :class:`glow.information_bottleneck.Estimator`
             optimizer (torch.optim.Optimizer): optimizer to be used during training process for all the layers
             regularize_coeff (float): trade-off parameter between generalization and compression according to IB-based theory
             learning_rate (float, optional): learning rate for gradient descent step (default: 0.001)

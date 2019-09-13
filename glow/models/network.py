@@ -31,6 +31,9 @@ class Network(nn.Module):
         is_gpu (bool): true if `GPU` is enabled on the system, false otherwise
         device (torch.device or int): `GPU` or `CPU` for training purposes
         track_dynamics (bool): tracks the NN dynamics during training (stores input-output for every intermediate layer)
+        criterion (callable): loss function for the model
+        optimizer (torch.optim.Optimizer): optimizer for training the model
+        metrics (str): metric to be used for evaluating performance of the model
 
     """
 
@@ -151,7 +154,7 @@ class Network(nn.Module):
         defined criterion in the 'evaluator_obj'.
 
         It appends the 'evaluator_obj'
-        to the list 'evaluator_list' which contains all the attached evaluators
+        to the list `evaluator_list` which contains all the attached evaluators
         with the model.
 
 
@@ -241,7 +244,7 @@ class Network(nn.Module):
                 epoch_collector.append(batch_collector)
 
         if self.track_dynamics:
-            self.evaluated_dynamics = epoch_collector
+            self.evaluated_dynamics = np.array(epoch_collector)
 
         # plot the loss vs epoch graphs
         if show_plot:
@@ -332,6 +335,18 @@ class IBSequential(Network):
         gpu (bool, optional): if true then PyGlow will attempt to use `GPU`, for false `CPU` will be used (default: False)
         track_dynamics (bool): if true then will track the input-hidden-output dynamics segment and will allow evaluator to attach to the model, for false no track for dynamics is kept
         save_dynamics (bool, optional): if true then saves the whole training process dynamics into a distributed file (for efficiency)
+
+    Attributes:
+        evaluator_list (iterable): list of :class:`glow.information_bottleneck.Estimator` instances which stores the evaluators for the model
+        evaluated_dynamics (iterable): list of evaluated dynamics segment information coordinates for intermediate layer for each evaluator averaged over batch for each epoch
+
+    Shape:
+        evaluator_list has shape (N, E, L, 2) where:
+            - N: Number of epochs
+            - E: Number of evaluators
+            - L: Number of layers with parameters (Flatten and Dropout excluded)
+
+        and last dimension is equal to 2 which stores 2-D information plane coordinates
 
     """
 
