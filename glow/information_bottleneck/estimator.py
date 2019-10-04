@@ -5,6 +5,7 @@ import torch
 import glow.utils.hsic_utils as kernel_module
 
 
+
 class Estimator:
     """
     Base class for all the estimator modules.
@@ -119,7 +120,6 @@ class EDGE(Estimator):
     def g(self, x):
         return x * torch.log(x) * (1 / math.log(10))
 
-    # mutual information
     def criterion(self, x, y):
         """
         Defines the criterion of the EDGE estimator algorithm which have
@@ -127,11 +127,16 @@ class EDGE(Estimator):
 
         """
         h = hash_module.get(self.hash_function, self.params_dict)
-        num_sample = x.shape[0]
-        F = self.params[3] * num_sample
+        num_samples = x.shape[0]
+        if "F" in self.params_dict.keys():
+            F = self.params_dict["F"] * num_samples
+        else:
+            raise Exception("Cannot find argument for number of nodes of dependency graph in EDGE estimator")
+
         N = torch.zeros(F, 1)
         M = torch.zeros(F, 1)
         L = torch.zeros(F, F)
+        """
         for k, x_k in enumerate(x):
             y_k = y[k]
             i = h(x_k)
@@ -139,15 +144,20 @@ class EDGE(Estimator):
             N[i] = N[i] + 1
             M[j] = M[j] + 1
             L[i][j] = L[i][j] + 1
+        """
+        N = torch.nn.functional.one_hot(N.long().view(-1, 1), F)
+        N = torch.sum(N, dim=0)
 
-        n = (1 / num_sample) * N
-        m = (1 / num_sample) * M
+        M = torch.nn.functional.one_hot(M.long().view(-1, 1), F)
+        M = torch.sum(M, dim=0)
+
+        n = (1 / num_samples) * N
+        m = (1 / num_samples) * M
         temp_matrix = torch.mm(N, torch.transpose(M, 0, 1))
         zero_matrix = torch.zeros(F, F)
-        w = torch.addcdiv(zero_matrix, N, L, temp_matrix)
+        w = torch.addcdiv(zero_matrix, num_samples, L, temp_matrix)
         temp_matrix = torch.mm(n, torch.transpose(m, 0, 1))
-        mut_info = torch.sum(temp_matrix * g(w))
-
+        mut_info = torch.sum(temp_matrix * g_hat(w))
         return mut_info
 
 

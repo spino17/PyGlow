@@ -1,5 +1,4 @@
 from torch import nn
-from glow.utils import Activations as A
 
 
 class TransitionLayer(nn.Module):
