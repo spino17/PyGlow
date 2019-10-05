@@ -117,7 +117,7 @@ class HSIC(Network):
     def compile(
         self,
         loss_criterion=None,
-        optimizer='SGD',
+        optimizer="SGD",
         regularize_coeff=100,
         learning_rate=0.001,
         momentum=0.95,

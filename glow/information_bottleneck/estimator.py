@@ -5,7 +5,6 @@ import torch
 import glow.utils.hsic_utils as kernel_module
 
 
-
 class Estimator:
     """
     Base class for all the estimator modules.
@@ -131,7 +130,9 @@ class EDGE(Estimator):
         if "F" in self.params_dict.keys():
             F = self.params_dict["F"] * num_samples
         else:
-            raise Exception("Cannot find argument for number of nodes of dependency graph in EDGE estimator")
+            raise Exception(
+                "Cannot find argument for number of nodes of dependency graph in EDGE estimator"
+            )
 
         N = torch.zeros(F, 1)
         M = torch.zeros(F, 1)
