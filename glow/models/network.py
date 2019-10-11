@@ -37,7 +37,7 @@ class Network(nn.Module):
 
     """
 
-    def __init__(self, input_shape, device, gpu, track_dynamics=False):
+    def __init__(self, input_shape=None, device="cpu", gpu=False, track_dynamics=False):
         super().__init__()
         self.input_shape = input_shape  # input dimensions
         self.layer_list = nn.ModuleList([])  # list of module type layers
