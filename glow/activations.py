@@ -21,6 +21,10 @@ def log_softmax(x, dim=1):
     return F.log_softmax(x, dim)
 
 
+def softplus(x):
+    return F.softplus(x)
+
+
 def get(identifier):
     if identifier == "relu":
         return relu
@@ -32,5 +36,7 @@ def get(identifier):
         return softmax
     elif identifier == "log_softmax":
         return log_softmax
+    elif identifier == "softplus":
+        return softplus
     else:
         raise ValueError("Could not interpret " "activation identifier:", identifier)
