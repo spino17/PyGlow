@@ -57,6 +57,10 @@ class VIB(Network):
         )
         self.metrics = metrics
 
+    def stochastic_prediction(y, batch_size, num_samples):
+        # TODO
+        return 0
+
     def training_loop(
         self,
         num_epochs,
@@ -110,8 +114,17 @@ class VIB(Network):
                             "Encoder output shape not sufficient for forming full covariance matrix under cholesky decomposition"
                         )
                     else:
-                        cov_mat = 0
-                        # TODO
+                        upper_vec = encoder_output[:, self.hidden_dim : ]
+                        upper_matrix = torch.zeros(
+                            (batch_size, self.hidden_dim, self.hidden_dim)
+                        ).to(self.device)
+                        triu_indices = torch.triu_indices(
+                            row=self.hidden_dim, col=self.hidden_dim, offset=0
+                        ).to(self.device)
+                        upper_matrix[:, triu_indices[0], triu_indices[1]] = upper_vec
+                        cov_mat = torch.matmul(
+                            torch.transpose(upper_matrix, 1, 2), upper_matrix
+                        )
 
                 p = torch.distributions.multivariate_normal.MultivariateNormal(
                     mean, cov_mat
@@ -131,7 +144,15 @@ class VIB(Network):
                 loss_term_2 = (1 / (batch_size * num_samples)) * torch.log(
                     decoder_output[index_vec, y_vec]
                 ).sum()
-
+                """
+                y_pred = self.stochastic_prediction(
+                    decoder_output, batch_size, num_samples
+                )
+                total = y_vec.size(0)
+                y_pred = torch.argmax(y_pred, dim=1).long().view(-1)
+                correct = (y_pred == y_vec).sum().item()
+                acc = correct / total
+                """
                 r_mean = torch.zeros(self.hidden_dim).to(self.device)
                 r_cov = torch.eye(self.hidden_dim).to(self.device)
                 r = torch.distributions.multivariate_normal.MultivariateNormal(
@@ -145,7 +166,9 @@ class VIB(Network):
                 loss.backward(retain_graph=True)
                 self.optimizer.step()
                 train_loss += loss.item()
+                #print("loss: %.2f, acc: %.2" % ((train_loss / train_len), acc))
                 pbar.update(1)
+            pbar.close()
             """
             else:
                 print("\n")
