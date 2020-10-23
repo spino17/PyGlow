@@ -137,15 +137,15 @@ class EDGE(Estimator):
         N = torch.zeros(F, 1)
         M = torch.zeros(F, 1)
         L = torch.zeros(F, F)
-        """
+
         for k, x_k in enumerate(x):
             y_k = y[k]
-            i = h(x_k)
-            j = h(y_k)
-            N[i] = N[i] + 1
-            M[j] = M[j] + 1
-            L[i][j] = L[i][j] + 1
-        """
+            i = int(h(x_k))
+            j = int(h(y_k))
+            N[i] = N[i] + 1.0
+            M[j] = M[j] + 1.0
+            L[i][j] = L[i][j] + 1.0
+        
         N = torch.nn.functional.one_hot(N.long().view(-1, 1), F)
         N = torch.sum(N, dim=0)
 
@@ -154,11 +154,12 @@ class EDGE(Estimator):
 
         n = (1 / num_samples) * N
         m = (1 / num_samples) * M
-        temp_matrix = torch.mm(N, torch.transpose(M, 0, 1))
+
+        temp_matrix = torch.mm(N, torch.transpose(M, 0, 1)).type(torch.FloatTensor)
         zero_matrix = torch.zeros(F, F)
-        w = torch.addcdiv(zero_matrix, num_samples, L, temp_matrix)
+        w = torch.addcdiv(zero_matrix, L, temp_matrix, value=num_samples)
         temp_matrix = torch.mm(n, torch.transpose(m, 0, 1))
-        mut_info = torch.sum(temp_matrix * g_hat(w))
+        mut_info = torch.sum(temp_matrix * self.g(w))
         return mut_info
 
 
