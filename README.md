@@ -4,7 +4,7 @@
 
 PyGlow is a Python package which attempts to implement Keras like API struture on PyTorch backend. It provides functionalities which supports information theoretic methods in deep learning. These methods are relevant for understanding neural network dynamics in information plane. The package is equipped with a number of state-of-the-art algorithms for estimating and calculating various kinds of information theoretic measures. The package also provides intensive support for information bottleneck based methods in deep learning. 
 
-# NOTICE: This project is archieved due to lack of time for its development because of other commitments. I would love to transfer ownership to anyone who is willing to take up the further development of this project. If you want to reach out to me please use bhavyabhatt17@gmail.com as my email.
+## NOTICE: This project is archieved due to lack of time for its development because of my other commitments. I would love to transfer ownership to anyone who is willing to take up the further development of this project. You can reach out to me please at bhavyabhatt17@gmail.com .
 
 # What's new with PyGlow ?
 
